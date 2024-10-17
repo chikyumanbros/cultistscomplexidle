@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cultist's Complex.idle</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Creepster&display=swap');
+
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #e0e0e0;
+            --panel-bg: #1a1a1a;
+            --highlight-color: #c31515;
+            --button-color: #4CAF50;
+            --button-hover: #45a049;
+            --button-disabled: #9a1e1e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            user-select: none;
+        }
+
+        #ascii-title-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        #ascii-title {
+            font-family: 'Courier New', monospace;
+            line-height: 1.2;
+            white-space: pre;
+            text-align: center;
+            color: #1aff1a;
+            text-shadow: 0 0 5px #1aff1a, 0 0 10px #1aff1a;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+        }
+
+        #version-display {
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #1aff1a;
+            text-shadow: 0 0 5px #1aff1a, 0 0 10px #1aff1a;
+            margin-top: -15px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            #ascii-title {
+                font-size: 8px;
+            }
+
+            #version-display {
+                font-size: 12px;
+            }
+        }
+
+
+        .container {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            grid-template-rows: auto auto auto 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #debugControls button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 2px 2px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        #debugControls span {
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        h1 {
+            grid-column: 1 / -1;
+            grid-row: 1;
+            text-align: center;
+            color: #10d12a;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(16, 209, 42, 0.5);
+        }
+
+        #resourceDisplay {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            text-align: center;
+        }
+
+        .resource-column h2 {
+            font-size: 1.8em;
+            border-bottom: none;
+            color: var(--highlight-color);
+        }
+
+        #largeSourceCount,
+        #largeMiasmaCount {
+            font-family: 'Creepster', cursive;
+            font-size: 3.5em;
+            color: var(--text-color);
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(224, 224, 224, 0.5), 0 0 20px rgba(195, 21, 21, 0.3);
+            letter-spacing: 2px;
+        }
+
+        #largeSourcePerSecond,
+        #largeMiasmaPerSecond {
+            font-size: 1.2em;
+            color: #b0b0b0;
+        }
+
+        .sidebar {
+            grid-column: 1 / 2;
+            grid-row: 3 / 5;
+        }
+
+        .main-content {
+            grid-column: 2 / 3;
+            grid-row: 3 / 4;
+        }
+
+        .upgrades {
+            grid-column: 3 / 4;
+            grid-row: 3 / 5;
+        }
+
+        .madness-table {
+            grid-column: 2 / 3;
+            grid-row: 4 / 5;
+        }
+
+        button {
+            background-color: var(--button-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px 0;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--button-hover);
+            transform: translateY(-2px);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            background-color: var(--button-disabled);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .monster-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .monster-card {
+            background-color: #192320;
+            padding: 15px;
+            border-radius: 8px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .monster-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .monster-card-details {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .monster-card-details.expanded {
+            display: block;
+        }
+
+        .summon-monster-btn {
+            transition: background-color 0.3s, opacity 0.3s;
+        }
+
+        .button-enabled {
+            opacity: 1;
+        }
+
+        .button-disabled {
+            opacity: 0.5;
+        }
+
+        .toggle-details {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 1.5em;
+        }
+
+        #adventurers {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        .adventurer {
+            flex: 0 1 calc(33.333% - 20px);
+            margin: 10px;
+            text-align: center;
+        }
+
+        .madness-btn {
+            cursor: pointer;
+            transition: background-color 0.3s, opacity 0.3s;
+            min-width: 120px;
+            /* 最小幅を設定 */
+            height: 36px;
+            /* 高さを固定 */
+            line-height: 36px;
+            /* テキストを垂直中央揃え */
+            padding: 0 10px;
+            /* 左右のパディングを追加 */
+            white-space: nowrap;
+            /* テキストを1行に */
+            overflow: hidden;
+            /* はみ出した部分を隠す */
+            text-overflow: ellipsis;
+            /* はみ出した部分を...で表示 */
+        }
+
+        .madness-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+
+        #log {
+            height: 150px;
+            overflow-y: auto;
+            background-color: #222;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+
+        #log p {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #2a2a2a;
+            border-radius: 3px;
+        }
+
+        #saveLoadButtons {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            z-index: 1000;
+        }
+
+        #saveLoadButtons button {
+            margin: 5px 0;
+            width: auto;
+            min-width: 120px;
+        }
+
+        #resetButton {
+            background-color: #d9534f;
+        }
+
+        #resetButton:hover {
+            background-color: #c9302c;
+        }
+
+        .ascii-art {
+            font-family: 'Courier New', monospace;
+            line-height: 1;
+            white-space: pre;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 0;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: auto auto auto auto 1fr;
+            }
+
+            .sidebar,
+            .upgrades {
+                grid-column: auto;
+                grid-row: auto;
+            }
+
+            .main-content,
+            .madness-table {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto auto auto;
+            }
+
+            .sidebar,
+            .main-content,
+            .upgrades,
+            .madness-table {
+                grid-column: 1 / -1;
+                grid-row: auto;
+            }
+        }
+    </style>
+</head>
+
+<div id="debugControls" style="position: fixed; top: 10px; left: 10px; z-index: 1000;"></div>
+<button id="toggleTimeAcceleration">Toggle Time Acceleration</button>
+<span id="timeAccelerationDisplay">x1</span>
+</div>
+
+<div id="saveLoadButtons">
+    <button onclick="saveGame()">Save Game</button>
+    <button onclick="loadGame()">Load Game</button>
+    <button id="resetButton" onclick="resetGameAndClearSave()">Reset Game & Clear Save</button>
+</div>
+<div id="ascii-title-container">
+    <pre id="ascii-title">
+     ██████╗██╗   ██╗██╗  ████████╗██╗███████╗████████╗███████╗
+    ██╔════╝██║   ██║██║  ╚══██╔══╝██║██╔════╝╚══██╔══╝██╔════╝
+    ██║     ██║   ██║██║     ██║   ██║███████╗   ██║   ███████╗
+    ██║     ██║   ██║██║     ██║   ██║╚════██║   ██║   ╚════██║
+    ╚██████╗╚██████╔╝███████╗██║   ██║███████║   ██║   ███████║
+     ╚═════╝ ╚═════╝ ╚══════╝╚═╝   ╚═╝╚══════╝   ╚═╝   ╚══════╝
+     ██████╗ ██████╗ ███╗   ███╗██████╗ ██╗     ███████╗██╗  ██╗
+    ██╔════╝██╔═══██╗████╗ ████║██╔══██╗██║     ██╔════╝╚██╗██╔╝
+    ██║     ██║   ██║██╔████╔██║██████╔╝██║     █████╗   ╚███╔╝ 
+    ██║     ██║   ██║██║╚██╔╝██║██╔═══╝ ██║     ██╔══╝   ██╔██╗ 
+    ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║     ███████╗███████╗██╔╝ ██╗
+     ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚══════╝╚══════╝╚═╝  ╚═╝
+    ░▒▓██╗██████╗ ██╗     ███████╗█▓▒░
+    ░▒▓█╔╝██╔══██╗██║     ██╔════╝█▓▒░
+    ░▒▓█║ ██║  ██║██║     █████╗  █▓▒░
+    ░▒▓█║ ██║  ██║██║     ██╔══╝  █▓▒░
+    ░▒▓╚██╗██████╔╝███████╗███████╗▓▒░
+    ░▒▓ ╚═╝╚═════╝ ╚══════╝╚══════╝▓▒░
+☽ ♆ ♄ Summon. Corrupt. Conquer. Idle. ♃ ♇ ☾
+    </pre>
+</div>
+<div id="version-display">v0.1.0</div>
+<div class="container">
+    <div id="resourceDisplay" class="panel">
+        <div class="resource-column">
+            <h2>🔔Source Collected</h2>
+            <p id="largeSourceCount">0</p>
+            <span id="upgradeSymbols"></span>
+            <p>(+<span id="largeSourcePerSecond">0</span>/sec)</p>
+        </div>
+        <div class="resource-column">
+            <h2>🌫️Miasma Accumulated</h2>
+            <p id="largeMiasmaCount">0</p>
+            <p>(+<span id="largeMiasmaPerSecond">0</span>/sec)</p>
+        </div>
+    </div>
+    <div class="sidebar panel">
+        <div id="followerSection">
+            <h2>Followers</h2>
+
+            <p>Count: <span id="followerCount">0</span></p>
+            <p>Efficiency: <span id="followerEfficiency">0.1</span></p>
+        </div>
+
+        <h2>Resources</h2>
+        <button onclick="collectSource()">Collect 1 Source</button>
+        <button id="recruitFollowerBtn" onclick="recruitFollower()">Recruit Follower</button>
+
+        <div id="gameDetails">
+            <h2>Game Details</h2>
+            <p><strong>Follower Efficiency:</strong> <span id="followerEfficiencyDetail">0.1</span></p>
+            <p><strong>Follower Boost:</strong> <span id="followerBoost">1.00</span>x</p>
+            <p><strong>Monster Synergy Boost:</strong> <span id="monsterSynergyBoost">1.00</span>x</p>
+            <p><strong>Active Upgrades:</strong> <span id="activeUpgrades">None</span></p>
+            <h3>Monster Production:</h3>
+            <div id="monsterProductionDetails">
+                <!-- Monster production details will be dynamically added here -->
+            </div>
+        </div>
+
+        <div id="log">
+            <h2>Actions Log</h2>
+            <div id="logEntries">
+                <!-- Log entries will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content panel">
+        <h2>Summon Old Ones</h2>
+        <div id="monsterGrid" class="monster-grid">
+
+        </div>
+    </div>
+
+    <div class="upgrades panel">
+        <h2>Upgrades</h2>
+        <div id="upgradeGrid" class="upgrade-grid">
+
+            <!-- Additional upgrade cards will be dynamically added here -->
+        </div>
+    </div>
+    <div class="madness-table panel">
+        <h2>Madness Table</h2>
+        <div id="adventurers">
+            <!-- Adventurers will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        const gameVersion = '0.1.0';
+
+        // グローバルロックとアクション固有のロックを追加
+        let globalLock = false;
+        const actionLocks = {
+            recruitFollower: false,
+            summonMonster: {}
+        };
+
+        let timeAcceleration = 1; // デフォルトは通常速度
+        // Game state
+        const gameState = {
+            source: 0,
+            miasma: 0,
+            followers: 0,
+            monsters: {
+                'Shoggoth': { count: 0, sourceEfficiency: 0.5, miasmaEfficiency: 0.1, baseFollowerCost: 1, followerCostGrowth: 1.1 },
+                'Deep One': { count: 0, sourceEfficiency: 3.0, miasmaEfficiency: 0.5, baseFollowerCost: 3, followerCostGrowth: 1.15 },
+                'Elder Thing': { count: 0, sourceEfficiency: 10.0, miasmaEfficiency: 2.0, baseFollowerCost: 5, followerCostGrowth: 1.2 },
+                'Star Spawn': { count: 0, sourceEfficiency: 25.0, miasmaEfficiency: 5.0, baseFollowerCost: 10, followerCostGrowth: 1.25 },
+                'Mi-go': { count: 0, sourceEfficiency: 75.0, miasmaEfficiency: 15.0, baseFollowerCost: 20, followerCostGrowth: 1.3 },
+                'Nightgaunt': { count: 0, sourceEfficiency: 250.0, miasmaEfficiency: 50.0, baseFollowerCost: 50, followerCostGrowth: 1.35 }
+            },
+            upgrades: [],
+            followerEfficiency: 0.1,
+            adventurers: [
+                { name: "Novice Explorer", miasmaRequired: 100, followerReward: 1, followerProduction: 0.1, madnessChance: 0.6, level: 1, isMad: false },
+                { name: "Seasoned Investigator", miasmaRequired: 500, followerReward: 5, followerProduction: 0.5, madnessChance: 0.4, level: 1, isMad: false },
+                { name: "Arcane Scholar", miasmaRequired: 2000, followerReward: 20, followerProduction: 2, madnessChance: 0.2, level: 1, isMad: false },
+                { name: "Occult Detective", miasmaRequired: 5000, followerReward: 50, followerProduction: 5, madnessChance: 0.15, level: 1, isMad: false },
+                { name: "Eldritch Archaeologist", miasmaRequired: 10000, followerReward: 100, followerProduction: 10, madnessChance: 0.1, level: 1, isMad: false },
+                { name: "Cosmic Voyager", miasmaRequired: 20000, followerReward: 200, followerProduction: 20, madnessChance: 0.05, level: 1, isMad: false }
+            ]
+        };
+
+        const baseCosts = {
+            follower: 10,
+            'Shoggoth': 100,
+            'Deep One': 500,
+            'Elder Thing': 2500,
+            'Star Spawn': 10000,
+            'Mi-go': 50000,
+            'Nightgaunt': 250000,
+            'Ritual Knowledge': 100,
+            'Eldritch Tome': 500,
+            'Cosmic Insight': 2500,
+            'Dark Pact': 10000,
+            'Astral Projection': 50000,
+            'Dimensional Rift': 250000
+        };
+
+        const upgradeSymbols = {
+            'Ritual Knowledge': '📚',
+            'Eldritch Tome': '📜',
+            'Cosmic Insight': '🌌',
+            'Dark Pact': '🔮',
+            'Astral Projection': '👁️',
+            'Dimensional Rift': '🕳️'
+        };
+
+        const asciiArt = {
+            'Follower': `
+<span style="color:#2E1A47">      ▄▄█▀▀█▄▄      </span>
+<span style="color:#2E1A47">    ▄█▀</span><span style="color:#3D2A56">░░░░░░</span><span style="color:#2E1A47">▀█▄    </span>
+<span style="color:#2E1A47">   █▀░</span><span style="color:#4B0082">▄▄███▄▄</span><span style="color:#2E1A47">░▀█   </span>
+<span style="color:#2E1A47">  █░</span><span style="color:#4B0082">█</span><span style="color:#2E1A47">▒</span><span style="color:#1E1E1E">░░░░</span><span style="color:#2E1A47">▒</span><span style="color:#4B0082">█</span><span style="color:#2E1A47">░█  </span>
+<span style="color:#2E1A47"> █░</span><span style="color:#4B0082">█▀▄</span><span style="color:#2E1A47">▒</span><span style="color:#1E1E1E">░░░</span><span style="color:#2E1A47">▒</span><span style="color:#4B0082">▄▀█</span><span style="color:#2E1A47">░█ </span>
+<span style="color:#2E1A47">█░</span><span style="color:#4B0082">▄█▀░</span><span style="color:#2E1A47">▒</span><span style="color:#1E1E1E">░░░</span><span style="color:#2E1A47">▒</span><span style="color:#4B0082">░▀█▄</span><span style="color:#2E1A47">░█</span>
+<span style="color:#2E1A47">█░</span><span style="color:#4B0082">█▄▄██████▄▄█</span><span style="color:#2E1A47">░█</span>
+<span style="color:#2E1A47">█░</span><span style="color:#4B0082">███████████</span><span style="color:#2E1A47">░█</span>
+<span style="color:#2E1A47">█░</span><span style="color:#6A0DAD">███</span><span style="color:#D2691E">▒▒▒▒▒</span><span style="color:#6A0DAD">███</span><span style="color:#2E1A47">░█</span>
+<span style="color:#2E1A47">█░░</span><span style="color:#6A0DAD">██</span><span style="color:#D2691E">▒</span><span style="color:#FF1493">(@)</span><span style="color:#D2691E">▒</span><span style="color:#FF1493">(@)</span><span style="color:#D2691E">▒</span><span style="color:#6A0DAD">██</span><span style="color:#2E1A47">░░█</span>
+<span style="color:#2E1A47">█▄░░</span><span style="color:#6A0DAD">█</span><span style="color:#D2691E">▒▒▒▒▒▒▒</span><span style="color:#6A0DAD">█</span><span style="color:#2E1A47">░░▄█</span>
+<span style="color:#2E1A47"> █▀▄▄░</span><span style="color:#D2691E">▒▒▒▒▒</span><span style="color:#2E1A47">░▄▄▀█ </span>
+<span style="color:#2E1A47"> ▀█░░▀</span><span style="color:#D2691E">▒▒▒▒▒</span><span style="color:#2E1A47">▀░░█▀ </span>
+<span style="color:#2E1A47">  ▀█▄░░</span><span style="color:#D2691E">▒▒▒</span><span style="color:#2E1A47">░░▄█▀  </span>
+<span style="color:#2E1A47">    ▀▀█▄▄▄█▀▀    </span>
+    `,
+            'Shoggoth': `
+<span style="color:#004000">▄▄▄──────▄▄▄</span>
+    <span style="color:#004000">▄██▀░</span><span style="color:#006000">▒▒▒</span><span style="color:#004000">░░░</span><span style="color:#006000">▒▒▒</span><span style="color:#004000">░▀██▄</span>
+  <span style="color:#004000">██▀░</span><span style="color:#006000">▒</span><span style="color:#008000">▄▄</span><span style="color:#006000">▒▒▒▒▒▒▒▒</span><span style="color:#008000">▄▄</span><span style="color:#006000">▒</span><span style="color:#004000">░▀██</span>
+ <span style="color:#004000">█▀░</span><span style="color:#006000">▒</span><span style="color:#00A000">▄█▀▀█ <span style="color:#FF0000"> + </span>  █▀▀█▄</span><span style="color:#006000">▒</span><span style="color:#004000">░▀█</span>
+<span style="color:#004000">█▀░</span><span style="color:#006000">▒</span><span style="color:#00C000">▄█▀</span><span style="color:#FF0000"> + </span><span style="color:#00C000">░░</span><span style="color:#FF0000"> + </span><span style="color:#00C000">▀█▄</span><span style="color:#006000">▒</span><span style="color:#004000">░▀█</span>
+<span style="color:#004000">█░</span><span style="color:#006000">▒</span><span style="color:#00E000">█▀</span><span style="color:#FF0000"> + </span><span style="color:#00E000">░░░░░░</span><span style="color:#FF0000"> ÷ </span><span style="color:#00E000">▀█</span><span style="color:#006000">▒</span><span style="color:#004000">░█</span>
+<span style="color:#004000">█░</span><span style="color:#006000">▒</span><span style="color:#00FF00">█░▄▀▀</span><span style="color:#FF0000">\\--/</span><span style="color:#00FF00">▀▀▄░░█</span><span style="color:#006000">▒</span><span style="color:#004000">░█</span>
+<span style="color:#004000">█░</span><span style="color:#006000">▒</span><span style="color:#00E000">█░█░░</span><span style="color:#FF0000">_\\/_</span><span style="color:#00E000">░░█░█</span><span style="color:#006000">▒</span><span style="color:#004000">░█</span>
+<span style="color:#004000">█░</span><span style="color:#006000">▒</span><span style="color:#00C000">▀█▄▀</span><span style="color:#FF0000">/,\\,\\</span><span style="color:#00C000">▀▄█▀</span><span style="color:#006000">▒</span><span style="color:#004000">░█</span>
+<span style="color:#004000">█▄░</span><span style="color:#006000">▒▒</span><span style="color:#00A000">▀▄</span><span style="color:#FF0000">'-'</span><span style="color:#00A000">▄▀</span><span style="color:#006000">▒▒</span><span style="color:#004000">░▄█</span>
+ <span style="color:#004000">██▄░░</span><span style="color:#006000">▒▒▒▒▒▒</span><span style="color:#004000">░░▄██</span>
+  <span style="color:#004000">▀██▄▄░░░░░░▄▄██▀</span>
+    <span style="color:#004000">▀▀████████▀▀</span>
+  <span style="color:#004000">▄█▀</span><span style="color:#006000">▒</span><span style="color:#00A000">█▒▒▒▒▒▒▒▒█</span><span style="color:#006000">▒</span><span style="color:#004000">▀█▄</span>
+ <span style="color:#004000">█▀</span><span style="color:#006000">▒</span><span style="color:#00C000">█▒█▒▒▒▒▒▒█▒█</span><span style="color:#006000">▒</span><span style="color:#004000">▀█</span>
+<span style="color:#004000">█</span><span style="color:#00FF00">▄█▒█▒█▒█▒█▒█▒█▒█▄</span><span style="color:#004000">█</span>
+<span style="color:#004000">▀█▄</span><span style="color:#00E000">█▒█▒▒█▒█▒▒█▒█</span><span style="color:#004000">▄█▀</span>
+    `,
+            'Deep One': `
+<span style="color:#005959">        ▄▄▄▄▄▄        </span>
+<span style="color:#005959">      ▄█▀▀▀▀▀▀█▄      </span>
+<span style="color:#005959">    ▄█▀░░</span><span style="color:#008080">▒▒▒▒</span><span style="color:#005959">░░▀█▄    </span>
+<span style="color:#005959">  ▄█▀░</span><span style="color:#008080">▒▒</span><span style="color:#00A0A0">▄▄▄▄▄▄</span><span style="color:#008080">▒▒</span><span style="color:#005959">░▀█▄  </span>
+</span><span style="color:#008080">▒</span><span style="color:#00A0A0">▄</span><span style="color:#FF0000">(@@)</span><span style="color:#00A0A0">░░░░░░░░</span><span style="color:#FF0000">(@@)</span><span style="color:#00A0A0">▄</span><span style="color:#008080">▒</span></span>
+<span style="color:#005959">█▀░</span><span style="color:#008080">▒</span><span style="color:#00BFBF">█▀░░░░░░░░▀█</span><span style="color:#008080">▒</span><span style="color:#005959">░▀█</span>
+<span style="color:#005959">█░</span><span style="color:#008080">▒</span><span style="color:#00DFDF">█░▄▀▀▀▀▀▀▄░█</span><span style="color:#008080">▒</span><span style="color:#005959">░█</span>
+<span style="color:#005959">█░</span><span style="color:#008080">▒</span><span style="color:#00FFFF">█░█░</span><span style="color:#40E0D0">_\\/_</span><span style="color:#00FFFF">░█░█</span><span style="color:#008080">▒</span><span style="color:#005959">░█</span>
+<span style="color:#005959">█░</span><span style="color:#008080">▒</span><span style="color:#00DFDF">▀█▄▀</span><span style="color:#40E0D0">/,\\,\\</span><span style="color:#00DFDF">▀▄█▀</span><span style="color:#008080">▒</span><span style="color:#005959">░█</span>
+<span style="color:#005959">█▄░</span><span style="color:#008080">▒▒</span><span style="color:#00BFBF">▀▄</span><span style="color:#40E0D0">'-'</span><span style="color:#00BFBF">▄▀</span><span style="color:#008080">▒▒</span><span style="color:#005959">░▄█</span>
+<span style="color:#005959"> ██▄░░</span><span style="color:#008080">▒▒▒▒▒▒</span><span style="color:#005959">░░▄██ </span>
+<span style="color:#005959">  ▀██▄▄░░░░░░▄▄██▀  </span>
+<span style="color:#005959">    ▀▀████████▀▀    </span>
+<span style="color:#008080">  ▄█▀▀▄</span><span style="color:#00A0A0">▓▓▓▓▓▓▓▓</span><span style="color:#008080">▄▀▀█▄  </span>
+<span style="color:#008080"> █▀ </span><span style="color:#00BFBF">▄▓▓▓▀▀▀▀▓▓▓▄</span><span style="color:#008080"> ▀█ </span>
+<span style="color:#008080">█  </span><span style="color:#00DFDF">▓▓▓▀▄▄▄▄▀▓▓▓</span><span style="color:#008080">  █</span>
+<span style="color:#008080">▀█▄▄</span><span style="color:#00FFFF">▓▓▓▓▓▓▓▓▓▓</span><span style="color:#008080">▄▄█▀</span>
+    `,
+            'Elder Thing': `
+<span style="color:#8B4513">     </span><span style="color:#FF4500">(@)</span><span style="color:#A0522D">╚═╗</span><span style="color:#FF4500">(@)</span><span style="color:#A0522D">╔═╝</span><span style="color:#FF4500">(@)</span><span style="color:#8B4513">     </span>
+<span style="color:#8B4513">      </span><span style="color:#A0522D">╚  ║  ╝</span><span style="color:#8B4513">      </span>
+<span style="color:#8B4513">       </span><span style="color:#A0522D">╚ ║ ╝</span><span style="color:#8B4513">       </span>
+<span style="color:#8B4513">    </span><span style="color:#FF4500">(@)</span><span style="color:#CD853F">╗╚ ║ ╝╔</span><span style="color:#FF4500">(@)</span><span style="color:#8B4513">    </span>
+<span style="color:#8B4513">      </span><span style="color:#CD853F">╔ ╚╦╝ ╗</span><span style="color:#8B4513">      </span>
+<span style="color:#704214">     ▄▄</span><span style="color:#8B4513">█████</span><span style="color:#704214">▄▄     </span>
+<span style="color:#704214">    ██</span><span style="color:#8B4513">▒█</span><span style="color:#FF4500">(@)</span><span style="color:#8B4513">█▒</span><span style="color:#704214">██    </span>
+<span style="color:#704214">   ██</span><span style="color:#8B4513">▒███████▒</span><span style="color:#704214">██   </span>
+<span style="color:#36648B"> ▄█</span><span style="color:#704214">█</span><span style="color:#8B4513">▒███████▒</span><span style="color:#704214">█</span><span style="color:#36648B">█▄ </span>
+<span style="color:#36648B">█▀</span><span style="color:#704214">██</span><span style="color:#8B4513">▒█████▒</span><span style="color:#704214">██</span><span style="color:#36648B">▀█</span>
+<span style="color:#36648B">▀█▄</span><span style="color:#704214">██</span><span style="color:#8B4513">▒███▒</span><span style="color:#704214">██</span><span style="color:#36648B">▄█▀</span>
+<span style="color:#36648B">  ▀█▄██████████▄█▀  </span>
+<span style="color:#36648B">    ▀▀█▄▄▄▄▄█▀▀    </span>
+<span style="color:#4682B4">  ▄▄██▀     ▀██▄▄  </span>
+<span style="color:#4682B4"> ██▀           ▀██ </span>
+<span style="color:#4682B4">█▀               ▀█</span>
+<span style="color:#4682B4">█▄   ▄       ▄   ▄█</span>
+<span style="color:#4682B4"> ▀██▀ ▀     ▀ ▀██▀ </span>
+    `,
+            'Star Spawn': `
+<span style="color:#2A0A29">      ▄████▄      </span>
+<span style="color:#2A0A29">    ▄█▀</span><span style="color:#FF1493">◉</span><span style="color:#2A0A29">▀██▀</span><span style="color:#FF1493">◉</span><span style="color:#2A0A29">▀█▄    </span>
+<span style="color:#2A0A29">   █▀ </span><span style="color:#4B0082">▄▄██▄▄</span><span style="color:#2A0A29"> ▀█   </span>
+<span style="color:#2A0A29">  █▀ </span><span style="color:#4B0082">█</span><span style="color:#FF1493">◉</span><span style="color:#4B0082">█</span><span style="color:#2A0A29">▀▀</span><span style="color:#4B0082">█</span><span style="color:#FF1493">◉</span><span style="color:#4B0082">█</span><span style="color:#2A0A29"> ▀█  </span>
+<span style="color:#2A0A29"> █▀ </span><span style="color:#6A0DAD">█▄▀▀▀▀▄█</span><span style="color:#2A0A29"> ▀█ </span>
+<span style="color:#2A0A29">█▀ </span><span style="color:#8A2BE2">█▀▄</span><span style="color:#FF1493">◉</span><span style="color:#8A2BE2">▄</span><span style="color:#FF1493">◉</span><span style="color:#8A2BE2">▄▀█</span><span style="color:#2A0A29"> ▀█</span>
+<span style="color:#2A0A29">█ </span><span style="color:#9370DB">▄█████████▄</span><span style="color:#2A0A29"> █</span>
+<span style="color:#2A0A29">█ </span><span style="color:#BA55D3">███▀▀▀▀▀███</span><span style="color:#2A0A29"> █</span>
+<span style="color:#2A0A29">█ </span><span style="color:#DA70D6">██▀  ▄  ▀██</span><span style="color:#2A0A29"> █</span>
+<span style="color:#2A0A29">█ </span><span style="color:#EE82EE">██  </span><span style="color:#FF1493"> ◉</span><span style="color:#EE82EE">   ██</span><span style="color:#2A0A29"> █</span>
+<span style="color:#2A0A29">█▄ </span><span style="color:#DA70D6">██▄   ▄██</span><span style="color:#2A0A29"> ▄█</span>
+<span style="color:#2A0A29">▀█▄ </span><span style="color:#BA55D3">▀██▄▄▄██▀</span><span style="color:#2A0A29"> ▄█▀</span>
+<span style="color:#2A0A29"> ▀█▄▄ </span><span style="color:#9370DB">▀▀▀▀▀</span><span style="color:#2A0A29"> ▄▄█▀ </span>
+<span style="color:#2A0A29">   ▀▀█▄▄▄▄▄█▀▀   </span>
+<span style="color:#4B0082"> ▄▄██▀▀▀▀▀▀▀██▄▄ </span>
+<span style="color:#6A0DAD">█▀▀ ▄▄▄▄▄▄▄ ▀▀█</span>
+<span style="color:#8A2BE2">█ ▄▀       ▀▄ █</span>
+<span style="color:#9370DB">▀█▀         ▀█▀</span>
+    `,
+            'Mi-go': `
+<span style="color:#8B0000">        ▄▄████▄▄        </span>
+<span style="color:#8B0000">      ▄█▀</span><span style="color:#00FF00">◉</span><span style="color:#8B0000">▀▀▀▀▀</span><span style="color:#00FF00">◉</span><span style="color:#8B0000">▀█▄      </span>
+<span style="color:#8B0000">    ▄█▀▀█▄▄▄▄▄▄▄█▀▀█▄    </span>
+<span style="color:#8B0000">  ▄█▀  ▄████████████▄ ▀█▄  </span>
+<span style="color:#8B0000">▄█▀ ▄███▀▀▀▀▀▀▀▀▀███▄ ▀█▄</span>
+<span style="color:#A52A2A">█▄▄███▀  </span><span style="color:#228B22">▄▄▄▄▄▄</span><span style="color:#A52A2A">  ▀███▄▄█</span>
+<span style="color:#A52A2A">█▀██▀   </span><span style="color:#32CD32">▄▀</span><span style="color:#B22222">█</span><span style="color:#32CD32">░░░▀▄</span><span style="color:#A52A2A">   ▀██▀█</span>
+<span style="color:#B22222">█ ▀█   </span><span style="color:#3CB371">█ ▄▄█▄▄ █</span><span style="color:#B22222">   █▀ █</span>
+<span style="color:#CD5C5C">█  ▀   </span><span style="color:#66CDAA">▀▄▀██▀▄▀</span><span style="color:#CD5C5C">   ▀  █</span>
+<span style="color:#FF6347">█▄   ▄▄▄▀▀▄▄▄▄▀▀▄▄▄   ▄█</span>
+<span style="color:#FF6347">▀█▄▄█▀▀█▄▄  ▄▄█▀▀█▄▄█▀</span>
+<span style="color:#FF7F50"> ▀█▄  ▀▀▀▀▀▀▀▀▀▀  ▄█▀ </span>
+<span style="color:#FF7F50">   ▀█▄▄ ▀▀▀▀▀▀ ▄▄█▀   </span>
+<span style="color:#FFA07A">     ▀█ █ ▄▄ █ █▀     </span>
+<span style="color:#FFA07A">      █ █ ▀▀ █ █      </span>
+<span style="color:#FFB6C1">      █ █    █ █      </span>
+<span style="color:#FFB6C1">      ▀▄▀    ▀▄▀      </span>
+<span style="color:#FFC0CB">       ▀      ▀       </span>
+    `,
+            'Nightgaunt': `
+<span style="color:#000080">  ▄▄</span><span style="color:#0000CD">▀▀</span><span style="color:#000080">▄▄    ▄▄</span><span style="color:#0000CD">▀▀</span><span style="color:#000080">▄▄  </span>
+<span style="color:#000080"> ▄</span><span style="color:#0000CD">▀</span><span style="color:#000080">█ </span><span style="color:#0000CD">▄▄▄▄</span><span style="color:#000080"> █</span><span style="color:#0000CD">▀</span><span style="color:#000080">▄ </span>
+<span style="color:#000080">█▀ </span><span style="color:#0000CD">█▀▀▀▀▀▀█</span><span style="color:#000080"> ▀█</span>
+<span style="color:#000080">█  </span><span style="color:#4169E1">█ ▄▄▄▄ █</span><span style="color:#000080">  █</span>
+<span style="color:#000080">█ </span><span style="color:#4169E1">█▀▄▀▀▀▄▀█</span><span style="color:#000080"> █</span>
+<span style="color:#000080">█ </span><span style="color:#6495ED">█ ▀▄▄▄▀ █</span><span style="color:#000080"> █</span>
+<span style="color:#000080">█ </span><span style="color:#6495ED">▀█▄▄▄▄▄█▀</span><span style="color:#000080"> █</span>
+<span style="color:#000080">█ </span><span style="color:#87CEFA">███▀▀▀███</span><span style="color:#000080"> █</span>
+<span style="color:#000080">█ </span><span style="color:#87CEFA">██▀   ▀██</span><span style="color:#000080"> █</span>
+<span style="color:#000080">█ </span><span style="color:#ADD8E6">██  ▄  ██</span><span style="color:#000080"> █</span>
+<span style="color:#000080">▀█▄ </span><span style="color:#E6E6FA">▀█▄▄▄█▀</span><span style="color:#000080"> ▄█▀</span>
+<span style="color:#000080"> ▀█▄▄ </span><span style="color:#E6E6FA">▀▀▀</span><span style="color:#000080"> ▄▄█▀ </span>
+<span style="color:#000080">   ▀█▄▄   ▄▄█▀   </span>
+<span style="color:#191970">     ▀█   █▀     </span>
+<span style="color:#191970">      █   █      </span>
+<span style="color:#191970">      █   █      </span>
+<span style="color:#191970">      █▄ ▄█      </span>
+<span style="color:#191970">       ▀▀▀       </span>
+    `,
+
+            'Novice Explorer': `
+
+
+<span style="color:#8B4513">     ▄████████▄     </span>
+<span style="color:#8B4513">   ▄█▀</span><span style="color:#A0522D">░░░░░░░░</span><span style="color:#8B4513">▀█▄   </span>
+<span style="color:#8B4513">  █▀</span><span style="color:#CD853F">░░</span><span style="color:#FFD700">▄▄▄▄▄▄▄▄</span><span style="color:#CD853F">░░</span><span style="color:#8B4513">▀█  </span>
+<span style="color:#8B4513"> █</span><span style="color:#CD853F">░░</span><span style="color:#FFD700">▄█</span><span style="color:#000000">●</span><span style="color:#FFD700">█░░█</span><span style="color:#000000">●</span><span style="color:#FFD700">█▄</span><span style="color:#CD853F">░░</span><span style="color:#8B4513">█ </span>
+<span style="color:#8B4513"> █</span><span style="color:#CD853F">░</span><span style="color:#FFD700">█░</span><span style="color:#DEB887">░░░░░░░░</span><span style="color:#FFD700">░█</span><span style="color:#CD853F">░</span><span style="color:#8B4513">█ </span>
+<span style="color:#8B4513"> █</span><span style="color:#CD853F">░</span><span style="color:#FFD700">█░░░</span><span style="color:#B8860B">\___/</span><span style="color:#FFD700">░░░█</span><span style="color:#CD853F">░</span><span style="color:#8B4513">█ </span>
+<span style="color:#8B4513"> █</span><span style="color:#CD853F">░░</span><span style="color:#FFD700">▀█░░░░░░░█▀</span><span style="color:#CD853F">░░</span><span style="color:#8B4513">█ </span>
+<span style="color:#8B4513"> █▄░░</span><span style="color:#FFD700">▀▀█▄▄▄█▀▀</span><span style="color:#CD853F">░░▄█ </span>
+<span style="color:#8B4513">  ▀█▄░░</span><span style="color:#DAA520">▀▀▀▀▀</span><span style="color:#CD853F">░░▄█▀  </span>
+<span style="color:#8B4513">    ▀█▄▄░░░░░▄▄█▀    </span>
+
+
+    `,
+            'Seasoned Investigator': `
+<span style="color:#8B4513">     ▄▄▄▄▄▄▄▄     </span>
+<span style="color:#8B4513">   ▄█▀</span><span style="color:#A0522D">░░░░░░</span><span style="color:#8B4513">▀█▄   </span>
+<span style="color:#8B4513">  █▀ </span><span style="color:#B8860B">▄▄▄▄▄▄▄▄</span><span style="color:#8B4513"> ▀█  </span>
+<span style="color:#8B4513"> █▀ </span><span style="color:#B8860B">█</span><span style="color:#000000">●</span><span style="color:#B8860B">▀▀▀▀</span><span style="color:#000000">●</span><span style="color:#B8860B">█</span><span style="color:#8B4513"> ▀█ </span>
+<span style="color:#8B4513">█▀ </span><span style="color:#B8860B">█  ▄██▄  █</span><span style="color:#8B4513"> ▀█</span>
+<span style="color:#8B4513">█ </span><span style="color:#B8860B">▄█████████▄</span><span style="color:#8B4513"> █</span>
+<span style="color:#8B4513">█ </span><span style="color:#DAA520">███▀▀▀▀▀███</span><span style="color:#8B4513"> █</span>
+<span style="color:#8B4513">█ </span><span style="color:#DAA520">██▀ </span><span style="color:#CD853F">╱╲</span><span style="color:#DAA520"> ▀██</span><span style="color:#8B4513"> █</span>
+<span style="color:#8B4513">█ </span><span style="color:#DAA520">██  </span><span style="color:#CD853F">││</span><span style="color:#DAA520">  ██</span><span style="color:#8B4513"> █</span>
+<span style="color:#8B4513">█▄ </span><span style="color:#DAA520">██▄ </span><span style="color:#CD853F">╲╱</span><span style="color:#DAA520"> ▄██</span><span style="color:#8B4513"> ▄█</span>
+<span style="color:#8B4513">▀█▄ </span><span style="color:#B8860B">▀██▄▄▄██▀</span><span style="color:#8B4513"> ▄█▀</span>
+<span style="color:#8B4513"> ▀█▄▄ </span><span style="color:#B8860B">▀▀▀▀▀</span><span style="color:#8B4513"> ▄▄█▀ </span>
+<span style="color:#8B4513">   ▀▀█████████▀▀   </span>
+
+    `,
+            'Arcane Scholar': `
+<span style="color:#4B0082">      ▄▄▄▄▄▄      </span>
+<span style="color:#4B0082">    ▄█▀</span><span style="color:#6A5ACD">░░░░</span><span style="color:#4B0082">▀█▄    </span>
+<span style="color:#4B0082">   █▀</span><span style="color:#8A2BE2">▄</span><span style="color:#000000">◙</span><span style="color:#8A2BE2">▀▀▀▀</span><span style="color:#000000">◙</span><span style="color:#8A2BE2">▄</span><span style="color:#4B0082">▀█   </span>
+<span style="color:#4B0082">  █▀</span><span style="color:#8A2BE2">█ ▄▄▄▄▄▄ █</span><span style="color:#4B0082">▀█  </span>
+<span style="color:#4B0082"> █▀</span><span style="color:#8A2BE2">▄█▀▀▀▀▀▀▀█▄</span><span style="color:#4B0082">▀█ </span>
+<span style="color:#4B0082">█▀</span><span style="color:#8A2BE2">█▀  ▄▄▄▄  ▀█</span><span style="color:#4B0082">▀█</span>
+<span style="color:#4B0082">█</span><span style="color:#8A2BE2">█   █▄▄█   █</span><span style="color:#4B0082">█</span>
+<span style="color:#4B0082">█</span><span style="color:#9370DB">█▄  ▀▀▀▀  ▄█</span><span style="color:#4B0082">█</span>
+<span style="color:#4B0082">█</span><span style="color:#9370DB">██▄  ▀▀  ▄██</span><span style="color:#4B0082">█</span>
+<span style="color:#4B0082">█</span><span style="color:#9370DB">███▄    ▄███</span><span style="color:#4B0082">█</span>
+<span style="color:#4B0082">█▄</span><span style="color:#9370DB">████████████</span><span style="color:#4B0082">▄█</span>
+<span style="color:#4B0082">▀█▄</span><span style="color:#9370DB">██████████</span><span style="color:#4B0082">▄█▀</span>
+<span style="color:#4B0082"> ▀██▄▄▄▄▄▄▄▄▄██▀ </span>
+<span style="color:#4B0082">   ▀▀█████████▀▀   </span>
+    `,
+            'Occult Detective': `
+<span style="color:#2F4F4F">     ▄▄▄▄▄▄▄▄     </span>
+<span style="color:#2F4F4F">   ▄█▀</span><span style="color:#708090">░░░░░░</span><span style="color:#2F4F4F">▀█▄   </span>
+<span style="color:#2F4F4F">  █▀ </span><span style="color:#778899">▄▄▄▄▄▄▄▄</span><span style="color:#2F4F4F"> ▀█  </span>
+<span style="color:#2F4F4F"> █▀ </span><span style="color:#778899">█</span><span style="color:#A9A9A9">▒▒▒▒▒▒</span><span style="color:#778899">█</span><span style="color:#2F4F4F"> ▀█ </span>
+<span style="color:#2F4F4F">█▀ </span><span style="color:#778899">█</span><span style="color:#A9A9A9">▒</span><span style="color:#000000">○   ○</span><span style="color:#A9A9A9">▒</span><span style="color:#778899">█</span><span style="color:#2F4F4F"> ▀█</span>
+<span style="color:#2F4F4F">█ </span><span style="color:#778899">▄█</span><span style="color:#A9A9A9">▒</span><span style="color:#000000">  ‿</span><span style="color:#A9A9A9">▒▒</span><span style="color:#778899">█▄</span><span style="color:#2F4F4F"> █</span>
+<span style="color:#2F4F4F">█ </span><span style="color:#4B0082">███▀▀▀▀▀███</span><span style="color:#2F4F4F"> █</span>
+<span style="color:#2F4F4F">█ </span><span style="color:#4B0082">██▀ </span><span style="color:#6A5ACD">▄▄</span><span style="color:#4B0082"> ▀██</span><span style="color:#2F4F4F"> █</span>
+<span style="color:#2F4F4F">█ </span><span style="color:#4B0082">██  </span><span style="color:#6A5ACD">▀▀</span><span style="color:#4B0082">  ██</span><span style="color:#2F4F4F"> █</span>
+<span style="color:#2F4F4F">█ </span><span style="color:#4B0082">██▄ </span><span style="color:#6A5ACD">╱╲</span><span style="color:#4B0082"> ▄██</span><span style="color:#2F4F4F"> █</span>
+<span style="color:#2F4F4F">█▄</span><span style="color:#4B0082">███████████</span><span style="color:#2F4F4F">▄█</span>
+<span style="color:#2F4F4F">▀█▄</span><span style="color:#4B0082">█████████</span><span style="color:#2F4F4F">▄█▀</span>
+<span style="color:#2F4F4F"> ▀██▄▄▄▄▄▄▄▄▄██▀ </span>
+<span style="color:#2F4F4F">   ▀▀█████████▀▀   </span>
+    `,
+            'Eldritch Archaeologist': `
+<span style="color:#556B2F">      ▄▄▄▄▄▄      </span>
+<span style="color:#556B2F">    ▄█▀</span><span style="color:#6B8E23">░░░░</span><span style="color:#556B2F">▀█▄    </span>
+<span style="color:#556B2F">   █▀</span><span style="color:#9ACD32">▄</span><span style="color:#000000">◙</span><span style="color:#9ACD32">▀▀▀▀</span><span style="color:#000000">◙</span><span style="color:#9ACD32">▄</span><span style="color:#556B2F">▀█   </span>
+<span style="color:#556B2F">  █▀</span><span style="color:#9ACD32">█ ▄▄▄▄▄▄ █</span><span style="color:#556B2F">▀█  </span>
+<span style="color:#556B2F"> █▀</span><span style="color:#9ACD32">▄█▀▀▀▀▀▀▀█▄</span><span style="color:#556B2F">▀█ </span>
+<span style="color:#556B2F">█▀</span><span style="color:#9ACD32">█▀  </span><span style="color:#000000">◉   ◉</span><span style="color:#9ACD32">  ▀█</span><span style="color:#556B2F">▀█</span>
+<span style="color:#556B2F">█</span><span style="color:#9ACD32">█    </span><span style="color:#000000">  ◡</span><span style="color:#9ACD32">    █</span><span style="color:#556B2F">█</span>
+<span style="color:#556B2F">█</span><span style="color:#8FBC8F">█▄  ▀▀▀▀  ▄█</span><span style="color:#556B2F">█</span>
+<span style="color:#556B2F">█</span><span style="color:#8FBC8F">██▄  ▀▀  ▄██</span><span style="color:#556B2F">█</span>
+<span style="color:#556B2F">█</span><span style="color:#8FBC8F">███▄    ▄███</span><span style="color:#556B2F">█</span>
+<span style="color:#556B2F">█▄</span><span style="color:#8FBC8F">████████████</span><span style="color:#556B2F">▄█</span>
+<span style="color:#556B2F">▀█▄</span><span style="color:#8FBC8F">██████████</span><span style="color:#556B2F">▄█▀</span>
+<span style="color:#556B2F"> ▀██▄▄▄▄▄▄▄▄▄██▀ </span>
+<span style="color:#556B2F">   ▀▀█████████▀▀   </span>
+    `,
+            'Cosmic Voyager': `
+<span style="color:#191970">      ▄▄█▀▀█▄▄      </span>
+<span style="color:#191970">    ▄█▀</span><span style="color:#000080">░░░░░░</span><span style="color:#191970">▀█▄    </span>
+<span style="color:#191970">   █▀░</span><span style="color:#4169E1">▄▄███▄▄</span><span style="color:#191970">░▀█   </span>
+<span style="color:#191970">  █░</span><span style="color:#4169E1">█</span><span style="color:#191970">▒</span><span style="color:#FF4500">(@)</span><span style="color:#191970">▒</span><span style="color:#4169E1">█</span><span style="color:#191970">▒</span><span style="color:#FF4500">(@)</span><span style="color:#191970">▒</span><span style="color:#4169E1">█</span><span style="color:#191970">░█  </span>
+<span style="color:#191970"> █░</span><span style="color:#4169E1">█▀▄</span><span style="color:#191970">▒▒▒</span><span style="color:#4169E1">▄▀█</span><span style="color:#191970">░█ </span>
+<span style="color:#191970">█░</span><span style="color:#4169E1">▄█▀░</span><span style="color:#191970">▒▒▒</span><span style="color:#4169E1">░▀█▄</span><span style="color:#191970">░█</span>
+<span style="color:#191970">█░</span><span style="color:#6495ED">█▄▄██████▄▄█</span><span style="color:#191970">░█</span>
+<span style="color:#191970">█░</span><span style="color:#6495ED">███████████</span><span style="color:#191970">░█</span>
+<span style="color:#191970">█░░</span><span style="color:#6495ED">█████████</span><span style="color:#191970">░░█</span>
+<span style="color:#191970">█▄░░</span><span style="color:#6495ED">███████</span><span style="color:#191970">░░▄█</span>
+<span style="color:#191970"> █▀▄▄░░░░░░░▄▄▀█ </span>
+<span style="color:#191970"> ▀█░░▀▀▀▀▀▀░░█▀ </span>
+<span style="color:#191970">  ▀█▄░░░░░░▄█▀  </span>
+<span style="color:#191970">    ▀▀█▄▄▄█▀▀    </span>
+    `
+        };
+
+
+        function toggleTimeAcceleration() {
+            const accelerationLevels = [1, 2, 5, 10, 50, 100];
+            const currentIndex = accelerationLevels.indexOf(timeAcceleration);
+            const nextIndex = (currentIndex + 1) % accelerationLevels.length;
+            timeAcceleration = accelerationLevels[nextIndex];
+            updateTimeAccelerationDisplay();
+        }
+
+        // モンスターカードの折りたたみ状態を記憶
+        function toggleMonsterCardDetails(monster, detailsDiv, toggleBtn) {
+            detailsDiv.classList.toggle('expanded');
+            toggleBtn.textContent = detailsDiv.classList.contains('expanded') ? '▲' : '▼';
+            localStorage.setItem(`monsterCard-${monster}-expanded`, detailsDiv.classList.contains('expanded'));
+        }
+
+        function restoreMonsterCardState(monster, detailsDiv, toggleBtn) {
+            const isExpanded = localStorage.getItem(`monsterCard-${monster}-expanded`) === 'true';
+            if (isExpanded) {
+                detailsDiv.classList.add('expanded');
+                toggleBtn.textContent = '▲';
+            } else {
+                detailsDiv.classList.remove('expanded');
+                toggleBtn.textContent = '▼';
+            }
+        }
+
+        function updateTimeAccelerationDisplay() {
+            const display = document.getElementById('timeAccelerationDisplay');
+            display.textContent = `x${timeAcceleration}`;
+        }
+
+        document.getElementById('toggleTimeAcceleration').addEventListener('click', toggleTimeAcceleration);
+
+        // Update getCost function
+        function getCost(item) {
+            const count = item === 'follower' ? gameState.followers : (gameState.monsters[item]?.count || 0);
+            return Math.floor(baseCosts[item] * Math.pow(1.25, count)); // Increased from 1.15 to 1.25
+        }
+
+        // Collect source function
+        function collectSource() {
+            gameState.source += 1; // 1回のクリックで1つだけ増加
+            updateDisplay();
+            logAction("Collected 1 source");
+        }
+
+        // デバッグ用の関数を追加
+        function debug(message) {
+            console.log(`[DEBUG] ${message}`);
+        }
+
+        // 各主要関数にデバッグログを追加
+
+        async function executeAction(action, params = {}) {
+            if (globalLock) return;
+            globalLock = true;
+
+            const actionName = action.name;
+            if (actionLocks[actionName]) {
+                globalLock = false;
+                return;
+            }
+
+            if (actionName === 'summonMonster' && actionLocks.summonMonster[params.type]) {
+                globalLock = false;
+                return;
+            }
+
+            actionLocks[actionName] = true;
+            if (actionName === 'summonMonster') {
+                actionLocks.summonMonster[params.type] = true;
+            }
+
+            try {
+                const initialState = JSON.parse(JSON.stringify(gameState));
+                await action(params);
+
+                // アクション後の状態を検証
+                if (actionName === 'recruitFollower') {
+                    const cost = getCost('follower');
+                    if (gameState.source > initialState.source ||
+                        gameState.followers !== initialState.followers + 1 ||
+                        gameState.source !== initialState.source - cost) {
+                        // 不正な状態変更があった場合、元に戻す
+                        Object.assign(gameState, initialState);
+                        debug(`Invalid state change detected in recruitFollower. Action reverted.`);
+                    }
+                }
+                // 他のアクションに対しても同様の検証を追加できます
+            } finally {
+                actionLocks[actionName] = false;
+                if (actionName === 'summonMonster') {
+                    actionLocks.summonMonster[params.type] = false;
+                }
+                globalLock = false;
+            }
+        }
+
+        async function recruitFollower() {
+            debug("recruitFollower called");
+            const cost = getCost('follower');
+
+            // ソースの量を再度チェック
+            if (gameState.source < cost) {
+                debug(`Not enough source to recruit follower. Required: ${cost}, Available: ${gameState.source}`);
+                return;
+            }
+
+            // トランザクション的なアプローチを使用
+            const currentSource = gameState.source;
+            const currentFollowers = gameState.followers;
+
+            // ソースを減少
+            gameState.source = currentSource - cost;
+
+            // フォロワーを増加
+            gameState.followers = currentFollowers + 1;
+
+            // 更新を反映
+            updateDisplay();
+            logAction(`Recruited 1 follower for ${cost} source`);
+            debug(`Follower recruited. New count: ${gameState.followers}`);
+        }
+
+        // summonMonster関数を非同期に変更
+        async function summonMonster(type) {
+            debug(`summonMonster called for ${type}`);
+            const sourceCost = getCost(type);
+            const followerCost = Math.floor(gameState.monsters[type].baseFollowerCost * Math.pow(gameState.monsters[type].followerCostGrowth, gameState.monsters[type].count));
+
+            if (gameState.source >= sourceCost && gameState.followers >= followerCost) {
+                gameState.source -= sourceCost;
+                gameState.followers -= followerCost;
+                gameState.monsters[type].count++;
+
+                updateDisplay();
+                logAction(`Summoned 1 ${type} for ${sourceCost} source and ${followerCost} followers`);
+                debug(`Monster summoned. New count: ${gameState.monsters[type].count}`);
+            } else {
+                if (gameState.source < sourceCost) {
+                    debug(`Not enough source to summon ${type}. Required: ${sourceCost}, Available: ${gameState.source}`);
+                }
+                if (gameState.followers < followerCost) {
+                    debug(`Not enough followers to summon ${type}. Required: ${followerCost}, Available: ${gameState.followers}`);
+                }
+            }
+        }
+
+        function buyUpgrade(upgrade) {
+            debug(`buyUpgrade called for ${upgrade}`);
+            const cost = getCost(upgrade);
+            if (gameState.source >= cost && !gameState.upgrades.includes(upgrade)) {
+                gameState.source -= cost;
+                gameState.upgrades.push(upgrade);
+                applyUpgrade(upgrade);
+                updateDisplay();
+                updateUpgradeSymbols();
+                logAction(`Bought ${upgrade} upgrade for ${cost} source`);
+                debug(`Upgrade bought. New upgrades: ${gameState.upgrades}`);
+            } else {
+                debug(`Unable to buy upgrade ${upgrade}. Cost: ${cost}, Available: ${gameState.source}, Already owned: ${gameState.upgrades.includes(upgrade)}`);
+            }
+        }
+
+        function updateUpgradeSymbols() {
+            const symbolsContainer = document.getElementById('upgradeSymbols');
+            symbolsContainer.innerHTML = '';
+
+            for (let upgrade of gameState.upgrades) {
+                const symbol = document.createElement('span');
+                symbol.className = 'upgrade-symbol';
+                symbol.textContent = upgradeSymbols[upgrade];
+                symbol.title = upgrade;
+                symbolsContainer.appendChild(symbol);
+            }
+        }
+
+
+        // Define upgrade effects
+        const upgradeEffects = {
+            'Ritual Knowledge': 'Increases follower efficiency by 50%',
+            'Eldritch Tome': 'Increases all monster efficiencies by 50%',
+            'Cosmic Insight': 'Doubles follower and monster efficiencies',
+            'Dark Pact': 'Increases source production by 100%',
+            'Astral Projection': 'Adds 10% of your total source to production every second',
+            'Dimensional Rift': 'Triples the effect of all other upgrades'
+        };
+
+        // Update upgrade effects
+        function applyUpgrade(upgrade) {
+            switch (upgrade) {
+                case "Ritual Knowledge":
+                    gameState.followerEfficiency *= 1.3; // Reduced from 1.5
+                    break;
+                case "Eldritch Tome":
+                    for (let monster in gameState.monsters) {
+                        gameState.monsters[monster].efficiency *= 1.3; // Reduced from 1.5
+                    }
+                    break;
+                case "Cosmic Insight":
+                    gameState.followerEfficiency *= 1.5; // Reduced from 2
+                    for (let monster in gameState.monsters) {
+                        gameState.monsters[monster].efficiency *= 1.5; // Reduced from 2
+                    }
+                    break;
+                case "Dark Pact":
+                    // Increases source production by 50% (reduced from 100%)
+                    for (let monster in gameState.monsters) {
+                        gameState.monsters[monster].efficiency *= 1.5;
+                    }
+                    gameState.followerEfficiency *= 1.5;
+                    break;
+                case "Astral Projection":
+                    // Adds 5% of total source to production every second (reduced from 10%)
+                    setInterval(() => {
+                        gameState.source += Math.floor(gameState.source * 0.05);
+                    }, 1000);
+                    break;
+                case "Dimensional Rift":
+                    // Doubles the effect of all other upgrades (reduced from triple)
+                    for (let upgrade of gameState.upgrades) {
+                        if (upgrade !== "Dimensional Rift") {
+                            applyUpgrade(upgrade);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        // Optimized update upgrade grid
+        function updateUpgradeGrid() {
+            const grid = document.getElementById('upgradeGrid');
+            const sourceCount = Math.floor(gameState.source);
+            const upgrades = ['Ritual Knowledge', 'Eldritch Tome', 'Cosmic Insight', 'Dark Pact', 'Astral Projection', 'Dimensional Rift'];
+
+            for (let upgrade of upgrades) {
+                if (gameState.upgrades.includes(upgrade)) {
+                    const existingCard = document.getElementById(`upgrade-${upgrade}`);
+                    if (existingCard) {
+                        existingCard.remove();
+                    }
+                    continue;
+                }
+
+                let card = document.getElementById(`upgrade-${upgrade}`);
+                if (!card) {
+                    card = document.createElement('div');
+                    card.id = `upgrade-${upgrade}`;
+                    card.className = 'upgrade-card';
+                    card.innerHTML = `
+                        <h3>${upgrade}</h3>
+                        <p>${upgradeEffects[upgrade]}</p>
+                        <button class="buy-upgrade-btn" data-upgrade="${upgrade}">Buy</button>
+                    `;
+                    grid.appendChild(card);
+                }
+
+                const buyBtn = card.querySelector('.buy-upgrade-btn');
+                const cost = getCost(upgrade);
+                buyBtn.textContent = `Buy (${cost} source)`;
+                buyBtn.disabled = sourceCount < cost;
+                buyBtn.classList.toggle('button-enabled', sourceCount >= cost);
+                buyBtn.classList.toggle('button-disabled', sourceCount < cost);
+            }
+        }
+
+
+        function attemptMadness(index) {
+            const adventurer = gameState.adventurers[index];
+            if (gameState.miasma < adventurer.miasmaRequired || adventurer.isMad) {
+                return;
+            }
+
+            gameState.miasma -= adventurer.miasmaRequired;
+
+            if (Math.random() < adventurer.madnessChance) {
+                adventurer.isMad = true;
+                adventurer.level++;
+                adventurer.followerProduction *= 1.5;
+                adventurer.miasmaRequired *= 1.5;
+                adventurer.madnessChance *= 0.9;
+
+                const followerReward = Math.floor(adventurer.followerReward * Math.sqrt(adventurer.level));
+                gameState.followers += followerReward;
+
+                logAction(`${adventurer.name} went mad! Level up to ${adventurer.level}. Generating ${adventurer.followerProduction.toFixed(1)} followers/sec. Gained ${followerReward} followers.`);
+
+                // クールダウン終了時間を設定
+                adventurer.cooldownEndTime = Date.now() + 60000;
+
+                setTimeout(() => {
+                    adventurer.isMad = false; // isMadフラグをリセット
+                    logAction(`${adventurer.name} has returned to sanity and can be challenged again!`);
+                    updateMadnessTable();
+                }, 60000);
+            } else {
+                logAction(`${adventurer.name} resisted the madness.`);
+            }
+
+            updateMadnessTable();
+            updateDisplay();
+        }
+
+        function updateAdventurerStates() {
+            const currentTime = Date.now();
+            gameState.adventurers.forEach(adventurer => {
+                if (adventurer.cooldownEndTime > currentTime) {
+                    adventurer.isMad = true;
+                } else {
+                    adventurer.isMad = false;
+                    adventurer.cooldownEndTime = 0;
+                }
+            });
+        }
+
+        // updateMadnessTable関数を修正
+        function updateMadnessTable() {
+            const adventurersContainer = document.getElementById('adventurers');
+            if (!adventurersContainer) {
+                console.error("Adventurers container not found");
+                return;
+            }
+
+            const currentTime = Date.now();
+            const miasmaCount = Math.floor(gameState.miasma);
+
+            gameState.adventurers.forEach((adventurer, index) => {
+                let adventurerElement = document.getElementById(`adventurer-${index}`);
+                if (!adventurerElement) {
+                    adventurerElement = document.createElement('div');
+                    adventurerElement.id = `adventurer-${index}`;
+                    adventurerElement.className = 'adventurer';
+                    adventurerElement.innerHTML = `
+                <h3>${adventurer.name}</h3>
+                <div class="ascii-art">${asciiArt[adventurer.name]}</div>
+                <p>Level: <span class="adventurer-level"></span></p>
+                <p>Miasma Required: <span class="miasma-required"></span></p>
+                <p>Follower Production: <span class="follower-production"></span>/sec</p>
+                <p>Madness Chance: <span class="madness-chance"></span>%</p>
+                <p>Status: <span class="adventurer-status"></span></p>
+                <button class="madness-btn" data-index="${index}">Attempt Madness</button>
+                <p>Cooldown: <span class="cooldown-status"></span></p>
+            `;
+                    adventurersContainer.appendChild(adventurerElement);
+                }
+
+                const cooldownRemaining = Math.max(0, adventurer.cooldownEndTime - currentTime);
+                const isReady = cooldownRemaining === 0;
+                const canAttemptMadness = miasmaCount >= adventurer.miasmaRequired && isReady;
+
+                // 各要素の更新（存在確認付き）
+                updateElementText(adventurerElement, '.adventurer-level', adventurer.level);
+                updateElementText(adventurerElement, '.miasma-required', Math.floor(adventurer.miasmaRequired));
+                updateElementText(adventurerElement, '.follower-production', adventurer.followerProduction.toFixed(1));
+                updateElementText(adventurerElement, '.madness-chance', (adventurer.madnessChance * 100).toFixed(0));
+                updateElementText(adventurerElement, '.adventurer-status', adventurer.isMad ? 'Mad' : 'Sane');
+                updateElementText(adventurerElement, '.cooldown-status', isReady ? 'Ready' : `${Math.ceil(cooldownRemaining / 1000)} seconds`);
+
+                // ボタンの状態を更新
+                const madnessBtn = adventurerElement.querySelector('.madness-btn');
+                if (madnessBtn) {
+                    madnessBtn.disabled = !canAttemptMadness;
+                    madnessBtn.classList.toggle('button-enabled', canAttemptMadness);
+                    madnessBtn.classList.toggle('button-disabled', !canAttemptMadness);
+                }
+            });
+        }
+
+        // ヘルパー関数：要素のテキストを安全に更新
+        function updateElementText(parentElement, selector, text) {
+            const element = parentElement.querySelector(selector);
+            if (element) {
+                element.textContent = text;
+            } else {
+                console.warn(`Element not found: ${selector}`);
+            }
+        }
+
+        // attemptMadness関数を修正
+        function attemptMadness(index) {
+            const adventurer = gameState.adventurers[index];
+            if (gameState.miasma < adventurer.miasmaRequired || adventurer.isMad) {
+                return;
+            }
+
+            gameState.miasma -= adventurer.miasmaRequired;
+
+            if (Math.random() < adventurer.madnessChance) {
+                adventurer.isMad = true;
+                adventurer.level++;
+                adventurer.followerProduction *= 1.5;
+                adventurer.miasmaRequired *= 1.5;
+                adventurer.madnessChance *= 0.9;
+
+                const followerReward = Math.floor(adventurer.followerReward * Math.sqrt(adventurer.level));
+                gameState.followers += followerReward;
+
+                logAction(`${adventurer.name} went mad! Level up to ${adventurer.level}. Generating ${adventurer.followerProduction.toFixed(1)} followers/sec. Gained ${followerReward} followers.`);
+
+                adventurer.cooldownEndTime = Date.now() + 60000;
+
+                setTimeout(() => {
+                    adventurer.isMad = false;
+                    adventurer.cooldownEndTime = 0;
+                    logAction(`${adventurer.name} has returned to sanity and can be challenged again!`);
+                    updateMadnessTable();
+                }, 60000);
+            } else {
+                logAction(`${adventurer.name} resisted the madness.`);
+            }
+
+            updateMadnessTable();
+            updateDisplay();
+        }
+
+        function handleMadnessAttempt(event) {
+            if (event.target.classList.contains('madness-btn') && !event.target.disabled) {
+                const index = parseInt(event.target.dataset.index);
+                attemptMadness(index);
+                event.preventDefault(); // イベントのデフォルト動作を防ぐ
+            }
+        }
+
+        // イベントリスナーの設定
+        const adventurersContainer = document.getElementById('adventurers');
+        if (adventurersContainer) {
+            adventurersContainer.addEventListener('click', handleMadnessAttempt);
+        }
+
+        function calculateResourceProduction() {
+            let sourceProduction = Number.isFinite(gameState.followers * gameState.followerEfficiency) ?
+                gameState.followers * gameState.followerEfficiency : 0;
+            let miasmaProduction = 0;
+            let followerProduction = 0;
+
+            for (let monster in gameState.monsters) {
+                if (gameState.monsters.hasOwnProperty(monster)) {
+                    const monsterData = gameState.monsters[monster];
+                    if (Number.isFinite(monsterData.count) && Number.isFinite(monsterData.sourceEfficiency)) {
+                        sourceProduction += monsterData.count * monsterData.sourceEfficiency;
+                    }
+                    if (Number.isFinite(monsterData.count) && Number.isFinite(monsterData.miasmaEfficiency)) {
+                        miasmaProduction += monsterData.count * monsterData.miasmaEfficiency;
+                    }
+                }
+            }
+
+            // 狂気に陥ったadventurerからのfollower生成を追加
+            for (let adventurer of gameState.adventurers) {
+                if (adventurer.isMad) {
+                    followerProduction += adventurer.followerProduction;
+                }
+            }
+
+            // シナジー効果の適用
+            const followerBoost = 1 + (gameState.followers * 0.01);
+            sourceProduction *= followerBoost;
+            miasmaProduction *= followerBoost;
+
+            const monsterTypes = Object.values(gameState.monsters).filter(m => m.count > 0).length;
+            const monsterSynergyBoost = 1 + (monsterTypes * 0.1);
+            sourceProduction *= monsterSynergyBoost;
+            miasmaProduction *= monsterSynergyBoost;
+
+            // Astral Projection 効果
+            if (gameState.upgrades.includes("Astral Projection")) {
+                sourceProduction += gameState.source * 0.1;
+                miasmaProduction += gameState.miasma * 0.1;
+            }
+
+            return { sourceProduction, miasmaProduction, followerProduction };
+        }
+
+        function updateDisplay() {
+            requestAnimationFrame(() => {
+                updateResourceDisplay();
+                updateFollowerSection();
+                updateMonsterGrid();
+                updateUpgradeGrid();
+                updateGameDetails();
+                updateMadnessTable();
+            });
+        }
+
+        // updateGameDetails 関数の追加
+        function updateGameDetails() {
+            const detailsDiv = document.getElementById('gameDetails');
+            if (!detailsDiv) {
+                console.warn("Game details div not found");
+                return;
+            }
+
+            const followerBoost = 1 + (gameState.followers * 0.01);
+            const monsterTypes = Object.values(gameState.monsters).filter(m => m.count > 0).length;
+            const monsterSynergyBoost = 1 + (monsterTypes * 0.1);
+
+            let detailsHTML = `
+        <p><strong>Follower Efficiency:</strong> ${gameState.followerEfficiency.toFixed(2)}</p>
+        <p><strong>Follower Boost:</strong> ${followerBoost.toFixed(2)}x</p>
+        <p><strong>Monster Synergy Boost:</strong> ${monsterSynergyBoost.toFixed(2)}x</p>
+        <p><strong>Active Upgrades:</strong> ${gameState.upgrades.join(', ') || 'None'}</p>
+        <h3>Monster Production:</h3>
+    `;
+
+            for (let monster in gameState.monsters) {
+                if (gameState.monsters[monster].count > 0) {
+                    const production = gameState.monsters[monster].count * gameState.monsters[monster].sourceEfficiency * followerBoost * monsterSynergyBoost;
+                    detailsHTML += `<p>${monster}: ${production.toFixed(1)} source/sec</p>`;
+                }
+            }
+
+            detailsDiv.innerHTML = detailsHTML;
+        }
+
+        function updateResourceDisplay() {
+            const sourceCount = Math.floor(gameState.source);
+            const miasmaCount = Math.floor(gameState.miasma);
+            const { sourceProduction, miasmaProduction } = calculateResourceProduction();
+
+            document.getElementById('largeSourceCount').textContent = sourceCount;
+            document.getElementById('largeSourcePerSecond').textContent = sourceProduction.toFixed(1);
+            document.getElementById('largeMiasmaCount').textContent = miasmaCount;
+            document.getElementById('largeMiasmaPerSecond').textContent = miasmaProduction.toFixed(1);
+
+            // フォロワー召喚ボタンの更新
+            const recruitFollowerBtn = document.getElementById('recruitFollowerBtn');
+            const newFollowerCost = getCost('follower');
+            recruitFollowerBtn.textContent = `Recruit Follower`;
+            recruitFollowerBtn.disabled = sourceCount < newFollowerCost;
+            recruitFollowerBtn.classList.toggle('button-enabled', sourceCount >= newFollowerCost);
+            recruitFollowerBtn.classList.toggle('button-disabled', sourceCount < newFollowerCost);
+        }
+
+        // updateMonsterGrid関数内の修正
+        function updateMonsterGrid() {
+            const grid = document.getElementById('monsterGrid');
+            const sourceCount = Math.floor(gameState.source);
+            const followerCount = gameState.followers;
+
+            for (let monster in gameState.monsters) {
+                let card = document.getElementById(`monster-${monster}`);
+                if (!card) {
+                    card = document.createElement('div');
+                    card.id = `monster-${monster}`;
+                    card.className = 'monster-card';
+                    card.innerHTML = `
+                <div class="monster-card-header">
+                    <h3>${monster}</h3>
+                    <button class="toggle-details">▼</button>
+                </div>
+                <div class="monster-card-details">
+                    <div class="ascii-art">${asciiArt[monster]}</div>
+                    <p>Count: <span class="monster-count"></span></p>
+                    <p>Source Efficiency: <span class="monster-source-efficiency"></span></p>
+                    <p>Miasma Efficiency: <span class="monster-miasma-efficiency"></span></p>
+                    <div class="monster-details">
+                        <p>Total Source Production: <span class="monster-source-production"></span>/sec</p>
+                        <p>Total Miasma Production: <span class="monster-miasma-production"></span>/sec</p>
+                        <p>Next Summon Cost: <span class="monster-next-cost"></span> source and <span class="monster-follower-cost"></span> followers</p>
+                        <p>Time to Next Summon: <span class="monster-time-to-summon"></span></p>
+                    </div>
+                </div>
+                <button class="summon-monster-btn" data-monster="${monster}">Summon 1 ${monster}</button>
+            `;
+                    grid.appendChild(card);
+
+                    const toggleBtn = card.querySelector('.toggle-details');
+                    const detailsDiv = card.querySelector('.monster-card-details');
+                    toggleBtn.addEventListener('click', () => toggleMonsterCardDetails(monster, detailsDiv, toggleBtn));
+                    restoreMonsterCardState(monster, detailsDiv, toggleBtn);
+
+                    const summonBtn = card.querySelector('.summon-monster-btn');
+                    summonBtn.addEventListener('click', () => summonMonster(monster));
+                }
+
+                const monsterData = gameState.monsters[monster];
+                if (!monsterData) {
+                    console.error(`No data found for monster: ${monster}`);
+                    continue;
+                }
+
+                const count = monsterData.count || 0;
+                const sourceEfficiency = monsterData.sourceEfficiency || 0;
+                const miasmaEfficiency = monsterData.miasmaEfficiency || 0;
+                const sourceProduction = count * sourceEfficiency;
+                const miasmaProduction = count * miasmaEfficiency;
+                const nextCost = getCost(monster);
+                const followerCost = Math.floor(monsterData.baseFollowerCost * Math.pow(monsterData.followerCostGrowth, count));
+                const sourceDifference = nextCost - sourceCount;
+                const timeToSummon = calculateTimeToSummon(sourceDifference, sourceProduction);
+
+                card.querySelector('.monster-count').textContent = count;
+                card.querySelector('.monster-source-efficiency').textContent = sourceEfficiency.toFixed(1);
+                card.querySelector('.monster-miasma-efficiency').textContent = miasmaEfficiency.toFixed(1);
+                card.querySelector('.monster-source-production').textContent = sourceProduction.toFixed(1);
+                card.querySelector('.monster-miasma-production').textContent = miasmaProduction.toFixed(1);
+                card.querySelector('.monster-next-cost').textContent = nextCost;
+                card.querySelector('.monster-follower-cost').textContent = followerCost;
+                card.querySelector('.monster-time-to-summon').textContent = formatTime(timeToSummon);
+                card.querySelector('.summon-monster-btn').disabled = sourceCount < nextCost || followerCount < followerCost;
+            }
+        }
+
+        function calculateTimeToSummon(sourceDifference, productionPerSecond) {
+            if (productionPerSecond <= 0) return Infinity;
+            return Math.max(0, sourceDifference / productionPerSecond);
+        }
+
+        function formatTime(seconds) {
+            if (!isFinite(seconds)) return 'Never';
+            if (seconds < 60) return `${Math.ceil(seconds)} seconds`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ${minutes % 60} minute${minutes % 60 > 1 ? 's' : ''}`;
+            const days = Math.floor(hours / 24);
+            return `${days} day${days > 1 ? 's' : ''} ${hours % 24} hour${hours % 24 > 1 ? 's' : ''}`;
+        }
+
+        // updateFollowerSection 関数の修正
+        function updateFollowerSection() {
+            const followerSection = document.getElementById('followerSection');
+            if (!followerSection) {
+                console.error("Follower section not found");
+                return;
+            }
+
+            const { followerProduction } = calculateResourceProduction();
+
+            followerSection.innerHTML = `
+        <h2>Followers</h2>
+        <div class="ascii-art" id="followerAsciiArt">
+            ${asciiArt['Follower']}
+</div>
+        <p>Count: <span id="followerCount">${Math.floor(gameState.followers)}</span></p>
+        <p>Efficiency: <span id="followerEfficiency">${gameState.followerEfficiency.toFixed(2)}</span></p>
+        <p>Production: <span id="followerPerSecond">${followerProduction.toFixed(1)}</span>/sec</p>
+    `;
+        }
+
+        // logAction 関数の再定義
+        function logAction(message) {
+            const log = document.getElementById('log');
+            if (log) {
+                const p = document.createElement('p');
+                p.textContent = message;
+                log.insertBefore(p, log.firstChild);
+                if (log.childElementCount > 20) {
+                    log.removeChild(log.lastChild);
+                }
+            }
+            debug(`Log: ${message}`);
+        }
+
+        function saveGame() {
+            const gameData = JSON.stringify({
+                version: gameVersion,
+                source: gameState.source,
+                miasma: gameState.miasma,
+                followers: gameState.followers,
+                monsters: gameState.monsters,
+                upgrades: gameState.upgrades,
+                followerEfficiency: gameState.followerEfficiency,
+                adventurers: gameState.adventurers.map(adventurer => ({
+                    ...adventurer,
+                    cooldownEndTime: adventurer.cooldownEndTime || 0
+                }))
+            });
+            localStorage.setItem('cultistComplexSave', gameData);
+            console.log("Game saved:", gameData);
+            logAction("Game saved successfully");
+        }
+
+        function loadGame() {
+            const savedGame = localStorage.getItem('cultistComplexSave');
+            if (savedGame) {
+                try {
+                    const loadedState = JSON.parse(savedGame);
+                    console.log("Loaded state:", loadedState);
+
+                    // バージョンチェック
+                    if (loadedState.version !== gameVersion) {
+                        console.warn(`Save version (${loadedState.version}) differs from current game version (${gameVersion}). Some data might not be compatible.`);
+                    }
+
+                    // データの検証と読み込み
+                    gameState.source = validateNumber(loadedState.source, 0);
+                    gameState.miasma = validateNumber(loadedState.miasma, 0);
+                    gameState.followers = validateNumber(loadedState.followers, 0);
+                    gameState.monsters = validateMonsters(loadedState.monsters);
+                    gameState.upgrades = Array.isArray(loadedState.upgrades) ? loadedState.upgrades : [];
+                    gameState.followerEfficiency = validateNumber(loadedState.followerEfficiency, 0.1);
+                    gameState.adventurers = loadedState.adventurers.map(adventurer => ({
+                        ...adventurer,
+                        cooldownEndTime: adventurer.cooldownEndTime || 0,
+                        isMad: false // ロード時に全ての冒険者のisMad状態をリセット
+                    }));
+
+                    console.log("Processed game state:", gameState);
+
+                    // DOMを更新
+                    updateUpgradeSymbols();
+                    logAction("Game loaded successfully");
+                } catch (error) {
+                    console.error("Error loading game:", error);
+                    logAction("Error loading game. Starting new game.");
+                    resetGameState();
+                }
+            } else {
+                logAction("No saved game found");
+                resetGameState();
+            }
+            updateAdventurerStates();
+            updateMadnessTable();
+        }
+
+        function validateNumber(value, defaultValue) {
+            return typeof value === 'number' && !isNaN(value) ? value : defaultValue;
+        }
+
+        function validateMonsters(monsters) {
+            const validatedMonsters = {};
+            for (let monsterName in monsters) {
+                if (monsters.hasOwnProperty(monsterName)) {
+                    validatedMonsters[monsterName] = {
+                        count: validateNumber(monsters[monsterName].count, 0),
+                        sourceEfficiency: validateNumber(monsters[monsterName].sourceEfficiency, baseCosts[monsterName] / 200),
+                        miasmaEfficiency: validateNumber(monsters[monsterName].miasmaEfficiency, baseCosts[monsterName] / 1000),
+                        baseFollowerCost: validateNumber(monsters[monsterName].baseFollowerCost, Math.ceil(baseCosts[monsterName] / 100)),
+                        followerCostGrowth: validateNumber(monsters[monsterName].followerCostGrowth, 1.1 + (baseCosts[monsterName] / 10000))
+                    };
+                }
+            }
+            return validatedMonsters;
+        }
+
+        function validateAdventurers(adventurers) {
+            if (!Array.isArray(adventurers)) return gameState.adventurers;
+            return adventurers.map(adventurer => ({
+                name: adventurer.name || "",
+                miasmaRequired: validateNumber(adventurer.miasmaRequired, 100),
+                followerReward: validateNumber(adventurer.followerReward, 1),
+                followerProduction: validateNumber(adventurer.followerProduction, 0.1),
+                madnessChance: validateNumber(adventurer.madnessChance, 0.6),
+                level: validateNumber(adventurer.level, 1),
+                isMad: Boolean(adventurer.isMad),
+                cooldownEndTime: validateNumber(adventurer.cooldownEndTime, 0)
+            }));
+        }
+
+        function resetGameAndClearSave() {
+            debug("Resetting game and clearing save");
+            const confirmReset = confirm("Are you sure you want to reset the game and clear all save data? This action cannot be undone.");
+
+            if (confirmReset) {
+                localStorage.removeItem('cultistComplexSave');
+                resetGameState();
+                rebuildUI();
+                logAction("Game has been reset and all save data has been cleared.");
+                debug("Game reset and save cleared");
+            } else {
+                debug("Game reset cancelled by user");
+            }
+        }
+
+        function resetGameState() {
+            debug("Resetting game state");
+            gameState.source = 0;
+            gameState.miasma = 0;
+            gameState.followers = 0;
+            gameState.monsters = {
+                'Shoggoth': { count: 0, sourceEfficiency: 0.5, miasmaEfficiency: 0.1, baseFollowerCost: 1, followerCostGrowth: 1.1 },
+                'Deep One': { count: 0, sourceEfficiency: 3.0, miasmaEfficiency: 0.5, baseFollowerCost: 3, followerCostGrowth: 1.15 },
+                'Elder Thing': { count: 0, sourceEfficiency: 10.0, miasmaEfficiency: 2.0, baseFollowerCost: 5, followerCostGrowth: 1.2 },
+                'Star Spawn': { count: 0, sourceEfficiency: 25.0, miasmaEfficiency: 5.0, baseFollowerCost: 10, followerCostGrowth: 1.25 },
+                'Mi-go': { count: 0, sourceEfficiency: 75.0, miasmaEfficiency: 15.0, baseFollowerCost: 20, followerCostGrowth: 1.3 },
+                'Nightgaunt': { count: 0, sourceEfficiency: 250.0, miasmaEfficiency: 50.0, baseFollowerCost: 50, followerCostGrowth: 1.35 }
+            };
+            gameState.upgrades = [];
+            gameState.followerEfficiency = 0.1;
+            gameState.adventurers = [
+                { name: "Novice Explorer", miasmaRequired: 100, followerReward: 1, followerProduction: 0.1, madnessChance: 0.6, level: 1, isMad: false },
+                { name: "Seasoned Investigator", miasmaRequired: 500, followerReward: 5, followerProduction: 0.5, madnessChance: 0.4, level: 1, isMad: false },
+                { name: "Arcane Scholar", miasmaRequired: 2000, followerReward: 20, followerProduction: 2, madnessChance: 0.2, level: 1, isMad: false },
+                { name: "Occult Detective", miasmaRequired: 5000, followerReward: 50, followerProduction: 5, madnessChance: 0.15, level: 1, isMad: false },
+                { name: "Eldritch Archaeologist", miasmaRequired: 10000, followerReward: 100, followerProduction: 10, madnessChance: 0.1, level: 1, isMad: false },
+                { name: "Cosmic Voyager", miasmaRequired: 20000, followerReward: 200, followerProduction: 20, madnessChance: 0.05, level: 1, isMad: false }
+            ];
+            debug("Game state reset complete");
+        }
+
+        function rebuildUI() {
+            debug("Rebuilding UI");
+
+            // リソース表示のリセット
+            document.getElementById('largeSourceCount').textContent = '0';
+            document.getElementById('largeSourcePerSecond').textContent = '0';
+            document.getElementById('largeMiasmaCount').textContent = '0';
+            document.getElementById('largeMiasmaPerSecond').textContent = '0';
+
+            // フォロワーセクションの更新
+            updateFollowerSection();
+
+            // モンスターグリッドの再構築
+            const monsterGrid = document.getElementById('monsterGrid');
+            monsterGrid.innerHTML = '';
+            updateMonsterGrid();
+
+            // アップグレードグリッドの再構築
+            const upgradeGrid = document.getElementById('upgradeGrid');
+            upgradeGrid.innerHTML = '';
+            updateUpgradeGrid();
+
+            // ゲーム詳細の更新
+            updateGameDetails();
+
+            // 狂気テーブルの更新
+            updateMadnessTable();
+
+            // アップグレードシンボルのリセット
+            updateUpgradeSymbols();
+
+            // ログのクリア
+            const logEntries = document.getElementById('logEntries');
+            if (logEntries) {
+                logEntries.innerHTML = '';
+            }
+
+            debug("UI rebuild complete");
+        }
+
+        // initializeGame 関数の修正
+        function initializeGame() {
+            debug("Initializing game");
+            document.getElementById('version-display').textContent = `v${gameVersion}`;
+            const savedGame = localStorage.getItem('cultistComplexSave');
+            if (savedGame) {
+                loadGame();
+            } else {
+                resetGameState();
+                rebuildUI();
+            }
+            setupEventListeners();
+            startGameLoop();
+            debug("Game initialization complete");
+        }
+
+        function resetDOM() {
+            debug("Resetting DOM elements");
+            // モンスターグリッドをクリア
+            const monsterGrid = document.getElementById('monsterGrid');
+            if (monsterGrid) monsterGrid.innerHTML = '';
+
+            // アップグレードグリッドをクリア
+            const upgradeGrid = document.getElementById('upgradeGrid');
+            if (upgradeGrid) upgradeGrid.innerHTML = '';
+
+            // ゲーム詳細をクリア
+            const gameDetails = document.getElementById('gameDetails');
+            if (gameDetails) gameDetails.innerHTML = '';
+
+            // ログをクリア
+            const log = document.getElementById('log');
+            if (log) log.innerHTML = '';
+
+            // ソースカウントとソース/秒をリセット
+            document.getElementById('largeSourceCount').textContent = '0';
+            document.getElementById('largeSourcePerSecond').textContent = '0.0';
+
+            // ミアズマカウントとミアズマ/秒をリセット
+            document.getElementById('largeMiasmaCount').textContent = '0';
+            document.getElementById('largeMiasmaPerSecond').textContent = '0.0';
+
+            // アップグレードシンボルをクリア
+            const upgradeSymbols = document.getElementById('upgradeSymbols');
+            if (upgradeSymbols) upgradeSymbols.innerHTML = '';
+
+            // フォロワーセクションをリセット
+            const followerSection = document.getElementById('followerSection');
+            if (followerSection) {
+                followerSection.querySelector('#followerCount').textContent = '0';
+                followerSection.querySelector('#followerEfficiency').textContent = '0.1';
+            }
+
+            debug("DOM reset complete");
+        }
+
+        function setupEventListeners() {
+            debug("Setting up event listeners");
+
+            const recruitFollowerBtn = document.getElementById('recruitFollowerBtn');
+            if (recruitFollowerBtn) {
+                recruitFollowerBtn.addEventListener('click', () => executeAction(recruitFollower));
+                debug("Recruit Follower button listener added");
+            } else {
+                debug("Recruit Follower button not found");
+            }
+
+            const monsterGrid = document.getElementById('monsterGrid');
+            if (monsterGrid) {
+                monsterGrid.addEventListener('click', function (event) {
+                    if (event.target.classList.contains('summon-monster-btn')) {
+                        const monster = event.target.dataset.monster;
+                        executeAction(summonMonster, { type: monster });
+                    }
+                });
+                debug("Monster Grid listener added");
+            } else {
+                debug("Monster Grid not found");
+            }
+
+            const upgradeGrid = document.getElementById('upgradeGrid');
+            if (upgradeGrid) {
+                upgradeGrid.addEventListener('click', function (event) {
+                    if (event.target.classList.contains('buy-upgrade-btn')) {
+                        buyUpgrade(event.target.dataset.upgrade);
+                    }
+                });
+                debug("Upgrade Grid listener added");
+            } else {
+                debug("Upgrade Grid not found");
+            }
+
+            const adventurersContainer = document.getElementById('adventurers');
+            if (adventurersContainer) {
+                adventurersContainer.addEventListener('click', function (event) {
+                    if (event.target.classList.contains('madness-btn') && !event.target.disabled) {
+                        const index = parseInt(event.target.dataset.index);
+                        attemptMadness(index);
+                    }
+                });
+                debug("Adventurers container listener added");
+            } else {
+                debug("Adventurers container not found");
+            }
+
+
+
+            // セーブ・ロードボタンのイベントリスナー
+            const saveLoadButtons = document.getElementById('saveLoadButtons');
+            if (saveLoadButtons) {
+                const saveButton = saveLoadButtons.querySelector('button:nth-child(1)');
+                const loadButton = saveLoadButtons.querySelector('button:nth-child(2)');
+
+                if (saveButton) {
+                    saveButton.addEventListener('click', saveGame);
+                    debug("Save button listener added");
+                } else {
+                    debug("Save button not found");
+                }
+
+                if (loadButton) {
+                    loadButton.addEventListener('click', loadGame);
+                    debug("Load button listener added");
+                } else {
+                    debug("Load button not found");
+                }
+            } else {
+                debug("Save/Load buttons container not found");
+            }
+        }
+        // startGameLoop 関数の修正
+        function startGameLoop() {
+            debug("Starting game loop");
+            gameLoop();
+            debug("Game loop started");
+        }
+
+        function gameLoop() {
+            const { sourceProduction, miasmaProduction, followerProduction } = calculateResourceProduction();
+            const timeFactor = 0.1 * timeAcceleration;
+            gameState.source += sourceProduction * timeFactor;
+            gameState.miasma += miasmaProduction * timeFactor;
+            gameState.followers += followerProduction * timeFactor;
+            updateAdventurerStates();
+
+            requestAnimationFrame(() => {
+                updateDisplay();
+                updateMadnessTable();
+            });
+        }
+
+        // DOMContentLoaded イベントリスナーの修正
+        document.addEventListener('DOMContentLoaded', function () {
+            debug("DOM fully loaded");
+            initializeGame();
+            debug("Game startup complete");
+        });
+
+        // ページを離れる前にセーブする処理の追加
+        window.addEventListener('beforeunload', function () {
+            debug("Saving game before unload");
+            saveGame();
+        });
+        // Start game loop (runs every 0.1 seconds)
+        setInterval(gameLoop, 100);
+
+        // Initial display update
+        updateDisplay();
+
+        // ページを離れる前にセーブ
+        window.addEventListener('beforeunload', saveGame);
+
+    </script>
+    </body>
+
+</html>
