@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cultist's Complex.idle</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Creepster&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Creepster&family=Press+Start+2P&family=Orbitron:wght@400;700&family=Audiowide&display=swap');
+
 
         :root {
             --bg-color: #0a0a0a;
@@ -124,35 +125,61 @@
         }
 
         #resourceDisplay {
-            grid-column: 1 / -1;
-            grid-row: 2;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            text-align: center;
-        }
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 255, 0, 0.2);
+    /*font-family: 'Press Start 2P', cursive;  /* オプション 1 */
+    /*font-family: 'Orbitron', sans-serif;  /* オプション 2 */
+    font-family: 'Audiowide', cursive;  /* オプション 3 */
+}
 
-        .resource-column h2 {
-            font-size: 1.8em;
-            border-bottom: none;
-            color: var(--highlight-color);
-        }
+.resource-column h2 {
+    /*font-size: 1.2em;  /* Press Start 2P の場合 */
+    font-size: 1.4em;  /* Orbitron または Audiowide の場合 */
+    margin-bottom: 5px;
+    color: #1aff1a;
+    text-shadow: 0 0 5px #1aff1a, 0 0 10px #1aff1a;
+}
 
-        #largeSourceCount,
-        #largeMiasmaCount {
-            font-family: 'Creepster', cursive;
-            font-size: 3.5em;
-            color: var(--text-color);
-            margin: 10px 0;
-            text-shadow: 0 0 10px rgba(224, 224, 224, 0.5), 0 0 20px rgba(195, 21, 21, 0.3);
-            letter-spacing: 2px;
-        }
+#largeSourceCount,
+#largeMiasmaCount {
+    /*font-size: 2em;  /* Press Start 2P の場合 */
+    font-size: 2.5em;  /* Orbitron または Audiowide の場合 */
+    margin: 5px 0;
+    color: #1aff1a;
+    text-shadow: 0 0 5px #1aff1a, 0 0 10px #1aff1a;
+}
 
-        #largeSourcePerSecond,
-        #largeMiasmaPerSecond {
-            font-size: 1.2em;
-            color: #b0b0b0;
-        }
+#largeSourcePerSecond,
+#largeMiasmaPerSecond {
+    /*font-size: 0.8em;  /* Press Start 2P の場合 */
+    font-size: 1em;  /* Orbitron または Audiowide の場合 */
+    color: #1aff1a;
+}
+
+.ascii-emblem {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1;
+    white-space: pre;
+    text-align: center;
+    margin: 0 20px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(26, 255, 26, 0.5);
+}
+
+.emblem-color1 { color: #1aff1a; text-shadow: 0 0 5px #1aff1a; }
+.emblem-color2 { color: #118011; }
+.emblem-color3 { color: #ff1a1a; text-shadow: 0 0 5px #ff1a1a; }
+.emblem-color4 { color: #ffff1a; text-shadow: 0 0 5px #ffff1a; }
 
         .sidebar {
             grid-column: 1 / 2;
@@ -411,30 +438,34 @@
     </pre>
 </div>
 <div id="version-display">v0.1.0</div>
-<div class="container">
-    <div id="resourceDisplay" class="panel">
-        <div class="resource-column">
-            <h2>🔔Source Collected</h2>
-            <p id="largeSourceCount">0</p>
-            <span id="upgradeSymbols"></span>
-            <p>(+<span id="largeSourcePerSecond">0</span>/sec)</p>
-        </div>
-        <div class="resource-column">
-            <h2>🌫️Miasma Accumulated</h2>
-            <p id="largeMiasmaCount">0</p>
-            <p>(+<span id="largeMiasmaPerSecond">0</span>/sec)</p>
-        </div>
+<div id="resourceDisplay" class="panel">
+    <div class="resource-column">
+        <h2>Source Collected</h2>
+        <p id="largeSourceCount">0</p>
+        <span id="upgradeSymbols"></span>
+        <p>(+<span id="largeSourcePerSecond">0</span>/sec)</p>
     </div>
+    <div id="emblem" class="ascii-emblem"></div>
+    <div class="resource-column">
+        <h2>Miasma Accumulated</h2>
+        <p id="largeMiasmaCount">0</p>
+        <p>(+<span id="largeMiasmaPerSecond">0</span>/sec)</p>
+    </div>
+</div>
+<div class="container">
     <div class="sidebar panel">
         <div id="followerSection">
             <h2>Followers</h2>
-
+            <div class="ascii-art" id="followerAsciiArt">
+                ${asciiArt['Follower']}
+            </div>
             <p>Count: <span id="followerCount">0</span></p>
             <p>Efficiency: <span id="followerEfficiency">0.1</span></p>
+            <p>Production: <span id="followerPerSecond">0</span>/sec</p>
+            <p>Next Recruit Cost: <span id="nextFollowerCost">10</span> source</p>
         </div>
-
         <h2>Resources</h2>
-        <button onclick="collectSource()">Collect 1 Source</button>
+        <button onclick="collectSource()">Collect  Source</button>
         <button id="recruitFollowerBtn" onclick="recruitFollower()">Recruit Follower</button>
 
         <div id="gameDetails">
@@ -773,6 +804,52 @@
 <span style="color:#191970">    ▀▀█▄▄▄█▀▀    </span>
     `
         };
+
+        function setEmblem() {
+    const emblem = document.getElementById('emblem');
+    emblem.innerHTML = `
+<span class="emblem-color1">     ╭━━━╮     </span>
+<span class="emblem-color2">  ╭──</span><span class="emblem-color1">┃╳╳╳┃</span><span class="emblem-color2">──╮  </span>
+<span class="emblem-color2"> ╭┫</span><span class="emblem-color3">◈</span><span class="emblem-color2">╭─</span><span class="emblem-color1">┃▣▣▣┃</span><span class="emblem-color2">─╮</span><span class="emblem-color3">◈</span><span class="emblem-color2">┣╮ </span>
+<span class="emblem-color2">╭┫</span><span class="emblem-color4">☫</span><span class="emblem-color2">┃</span><span class="emblem-color3">◬</span><span class="emblem-color1">━╋━━━╋━</span><span class="emblem-color3">◬</span><span class="emblem-color2">┃</span><span class="emblem-color4">☫</span><span class="emblem-color2">┣╮</span>
+<span class="emblem-color2">┃</span><span class="emblem-color3">◈</span><span class="emblem-color2">┃┃</span><span class="emblem-color1">┏━┻━━━┻━┓</span><span class="emblem-color2">┃┃</span><span class="emblem-color3">◈</span><span class="emblem-color2">┃</span>
+<span class="emblem-color2">┃</span><span class="emblem-color4">☬</span><span class="emblem-color2">┃</span><span class="emblem-color1">┃</span><span class="emblem-color4">❂</span><span class="emblem-color1">╭──╮</span><span class="emblem-color4">❂</span><span class="emblem-color1">┃</span><span class="emblem-color2">┃</span><span class="emblem-color4">☬</span><span class="emblem-color2">┃</span>
+<span class="emblem-color2">┣</span><span class="emblem-color3">◈</span><span class="emblem-color2">╋</span><span class="emblem-color1">┃</span><span class="emblem-color4">❂</span><span class="emblem-color1">╰──╯</span><span class="emblem-color4">❂</span><span class="emblem-color1">┃</span><span class="emblem-color2">╋</span><span class="emblem-color3">◈</span><span class="emblem-color2">┫</span>
+<span class="emblem-color2">┃</span><span class="emblem-color4">☫</span><span class="emblem-color2">┃</span><span class="emblem-color1">┗━┳━━━┳━┛</span><span class="emblem-color2">┃</span><span class="emblem-color4">☫</span><span class="emblem-color2">┃</span>
+<span class="emblem-color2">╰┫</span><span class="emblem-color3">◈</span><span class="emblem-color2">┃</span><span class="emblem-color3">◬</span><span class="emblem-color1">━╋━━━╋━</span><span class="emblem-color3">◬</span><span class="emblem-color2">┃</span><span class="emblem-color3">◈</span><span class="emblem-color2">┣╯</span>
+<span class="emblem-color2"> ╰┫</span><span class="emblem-color4">☬</span><span class="emblem-color2">╰─</span><span class="emblem-color1">┃▢▢▢┃</span><span class="emblem-color2">─╯</span><span class="emblem-color4">☬</span><span class="emblem-color2">┣╯ </span>
+<span class="emblem-color2">  ╰──</span><span class="emblem-color1">┃╳╳╳┃</span><span class="emblem-color2">──╯  </span>
+<span class="emblem-color1">     ╰━━━╯     </span>
+`;
+}
+
+function updateEmblem() {
+    const emblem = document.getElementById('emblem');
+    let emblems = emblem.innerHTML.split('\n');
+    
+    if (gameState.monsters['Elder Thing'].count > 10) {
+        emblems[5] = emblems[5].replace('╭──╮', '╭━━╮');
+        emblems[6] = emblems[6].replace('╰──╯', '╰━━╯');
+    }
+    
+    if (gameState.upgrades.includes('Cosmic Insight')) {
+        emblems[5] = emblems[5].replace('❂', '◉');
+        emblems[6] = emblems[6].replace('❂', '◉');
+    }
+    
+    if (gameState.monsters['Star Spawn'].count > 5) {
+        emblems[3] = emblems[3].replace('◬', '★').replace('◬', '★');
+        emblems[8] = emblems[8].replace('◬', '★').replace('◬', '★');
+    }
+    
+    if (gameState.upgrades.includes('Dimensional Rift')) {
+        emblems[2] = emblems[2].replace('◈', '◇');
+        emblems[9] = emblems[9].replace('◈', '◇');
+    }
+    
+    emblem.innerHTML = emblems.join('\n');
+}
+
 
 
         function toggleTimeAcceleration() {
@@ -1337,7 +1414,7 @@
                         <p>Time to Next Summon: <span class="monster-time-to-summon"></span></p>
                     </div>
                 </div>
-                <button class="summon-monster-btn" data-monster="${monster}">Summon 1 ${monster}</button>
+                <button class="summon-monster-btn" data-monster="${monster}">Summon  ${monster}</button>
             `;
                     grid.appendChild(card);
 
@@ -1396,24 +1473,35 @@
 
         // updateFollowerSection 関数の修正
         function updateFollowerSection() {
-            const followerSection = document.getElementById('followerSection');
-            if (!followerSection) {
-                console.error("Follower section not found");
-                return;
-            }
+    const followerSection = document.getElementById('followerSection');
+    if (!followerSection) {
+        console.error("Follower section not found");
+        return;
+    }
 
-            const { followerProduction } = calculateResourceProduction();
+    const { followerProduction } = calculateResourceProduction();
+    const nextFollowerCost = getCost('follower');
 
-            followerSection.innerHTML = `
+    followerSection.innerHTML = `
         <h2>Followers</h2>
         <div class="ascii-art" id="followerAsciiArt">
             ${asciiArt['Follower']}
-</div>
+        </div>
         <p>Count: <span id="followerCount">${Math.floor(gameState.followers)}</span></p>
         <p>Efficiency: <span id="followerEfficiency">${gameState.followerEfficiency.toFixed(2)}</span></p>
         <p>Production: <span id="followerPerSecond">${followerProduction.toFixed(1)}</span>/sec</p>
+        <p>Next Recruit Cost: <span id="nextFollowerCost">${nextFollowerCost}</span> source</p>
     `;
-        }
+
+    // フォロワー召喚ボタンの更新
+    const recruitFollowerBtn = document.getElementById('recruitFollowerBtn');
+    if (recruitFollowerBtn) {
+        recruitFollowerBtn.textContent = `Recruit Follower`;
+        recruitFollowerBtn.disabled = gameState.source < nextFollowerCost;
+        recruitFollowerBtn.classList.toggle('button-enabled', gameState.source >= nextFollowerCost);
+        recruitFollowerBtn.classList.toggle('button-disabled', gameState.source < nextFollowerCost);
+    }
+}
 
         // logAction 関数の再定義
         function logAction(message) {
@@ -1744,22 +1832,24 @@
         }
 
         function gameLoop() {
-            const { sourceProduction, miasmaProduction, followerProduction } = calculateResourceProduction();
-            const timeFactor = 0.1 * timeAcceleration;
-            gameState.source += sourceProduction * timeFactor;
-            gameState.miasma += miasmaProduction * timeFactor;
-            gameState.followers += followerProduction * timeFactor;
-            updateAdventurerStates();
+    const { sourceProduction, miasmaProduction, followerProduction } = calculateResourceProduction();
+    const timeFactor = 0.1 * timeAcceleration;
+    gameState.source += sourceProduction * timeFactor;
+    gameState.miasma += miasmaProduction * timeFactor;
+    gameState.followers += followerProduction * timeFactor;
+    updateAdventurerStates();
 
-            requestAnimationFrame(() => {
-                updateDisplay();
-                updateMadnessTable();
-            });
-        }
+    requestAnimationFrame(() => {
+        updateDisplay();
+        updateMadnessTable();
+        updateEmblem();  // ここで updateEmblem を呼び出す
+    });
+}
 
         // DOMContentLoaded イベントリスナーの修正
         document.addEventListener('DOMContentLoaded', function () {
             debug("DOM fully loaded");
+            setEmblem();
             initializeGame();
             debug("Game startup complete");
         });
