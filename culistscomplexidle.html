@@ -2,6 +2,10 @@
 <html lang="en">
 
 <head>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cultist's Complex.idle</title>
@@ -1717,6 +1721,23 @@
             border-color: #4CAF50;
         }
 
+        .buy-upgrade-btn {
+            /* 基本スタイル */
+            transition: all 0.2s ease;
+        }
+
+        .buy-upgrade-btn.affordable {
+            opacity: 1;
+            cursor: pointer;
+            /* 利用可能な時の他のスタイル */
+        }
+
+        .buy-upgrade-btn.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            /* 無効時の他のスタイル */
+        }
+
         /* ロック状態のカードのスタイル */
         .monster-card.locked {
             opacity: 0.7;
@@ -1819,12 +1840,38 @@
         }
 
         .upgrade-card {
+            position: relative;
             background-color: #192320;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 15px;
-            position: relative;
+            z-index: 1;
+            pointer-events: auto;
+        }
+
+        .buy-upgrade-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 4px 8px;
+            background-color: transparent;
+            color: #e0e0e0;
+            border: 1px solid #4CAF50;
+            border-radius: 3px;
+            cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+            pointer-events: auto;
+        }
+
+        .buy-upgrade-btn:not(:disabled) {
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .buy-upgrade-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .upgrade-card h3 {
@@ -1856,21 +1903,6 @@
             margin-top: 10px;
             border-radius: 5px;
             font-size: 0.9em;
-        }
-
-        .upgrade-card button {
-            width: 100%;
-            margin-top: 10px;
-            transition: none;
-            animation: none;
-            background-color: transparent;
-            /* 背景を透明に設定 */
-        }
-
-        .upgrade-card button:disabled {
-            background-color: #666;
-            cursor: not-allowed;
-            background-color: transparent;
         }
 
         /* アンロック時のアニメーション */
@@ -2299,13 +2331,6 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
-        .notification-icon {
-            width: 32px;
-            height: 32px;
-            background-size: contain;
-            background-repeat: no-repeat;
-        }
-
         .notification-content {
             flex-grow: 1;
         }
@@ -2319,6 +2344,35 @@
             margin: 0;
         }
 
+        .unlock-notification .notification-icon {
+            width: 32px;
+            height: 32px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .unlock-notification .monsters-icon {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%234CAF50" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>');
+        }
+
+        .unlock-notification .adventurers-icon {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23FFC107" d="M12 2L4 7v10l8 5 8-5V7l-8-5zm6 14.18l-6 3.82-6-3.82V8.82l6-3.82 6 3.82v7.36z"/></svg>');
+        }
+
+        .unlock-notification .upgrades-icon {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%239C27B0" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg>');
+        }
+
+        .unlock-notification .resources-icon {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23F44336" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>');
+        }
+
+        .unlock-notification .special-icon {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23FFD700" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>');
+        }
+
+        /* アンロック通知のアニメーション */
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -2339,23 +2393,6 @@
             to {
                 opacity: 0;
             }
-        }
-
-        /* アイコンのスタイル */
-        .monster-icon {
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzRDQUY1MCI+PHBhdGggZD0iTTEyIDJMNCA3djEwbDggNWw4LTV2LTEwbC04LTV6Ii8+PC9zdmc+');
-        }
-
-        .adventurer-icon {
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzQyQTVGNSI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6Ii8+PC9zdmc+');
-        }
-
-        .upgrade-icon {
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGQzEwNyI+PHBhdGggZD0iTTEyIDJMMTUuMDkgOC4yNkwyMiA5LjI3TDE3IDEzLjE0TDE4LjE4IDIwLjAyTDEyIDE2LjcyTDUuODIgMjAuMDJMNyAxMy4xNEwyIDkuMjdMOC45MSA4LjI2TDEyIDJ6Ii8+PC9zdmc+');
-        }
-
-        .resource-icon {
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0U5MUU2MyI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6TTEyIDIwYy00LjQyIDAtOC0zLjU4LTgtOHMzLjU4LTggOC04IDggMy41OCA4IDgtMy41OCA4LTggOHoiLz48L3N2Zz4=');
         }
 
         /* ペナルティ状態の表示スタイル */
@@ -2453,7 +2490,7 @@
         <div id="top-buttons">
             <button id="toggleCrtEffect">CRT Effect: ON</button>
             <button id="toggleStatistics">Statistics</button>
-            <button id="toggleAllMonsterCards">Toggle All Cards</button>
+            <button id="toggleAllMonsterCards">Collapse All Cards</button>
             <button id="jumpToSummonOldOne" title="Press 'S' to jump">Jump to Summon Old One</button>
             <button id="jumpToMadnessTable" title="Press 'A' to jump">Jump to Madness Table</button>
             <button id="backToTopBtn">Back to Top</button>
@@ -2896,13 +2933,9 @@
                 isAscii = !isAscii;
             });
 
-            // まず既存のクリックイベントリスナーを削除
             document.addEventListener('DOMContentLoaded', function () {
                 const resourceDisplay = document.getElementById('resourceDisplay');
-                if (resourceDisplay) {
-                    // クリックイベントリスナーを削除
-                    resourceDisplay.removeEventListener('click', function () { });
-                }
+                if (!resourceDisplay) return;
 
                 // topボタンに新しいボタンを追加
                 const topButtons = document.getElementById('top-buttons');
@@ -2911,12 +2944,9 @@
                     toggleDisplayButton.id = 'toggleResourceDisplay';
                     toggleDisplayButton.textContent = 'Simple View: OFF';
 
-                    // 保存された表示モードを復元
-                    const displayMode = localStorage.getItem('resourceDisplayMode');
-                    if (displayMode === 'simple') {
-                        resourceDisplay.classList.add('simple');
-                        toggleDisplayButton.textContent = 'Simple View: ON';
-                    }
+                    // デフォルトで normal モードに設定
+                    resourceDisplay.classList.remove('simple');
+                    localStorage.setItem('resourceDisplayMode', 'normal');
 
                     // 新しいボタンのクリックイベント
                     toggleDisplayButton.addEventListener('click', function () {
@@ -2944,6 +2974,8 @@
                 cultos: 0,
                 cultosRate: 0,
                 followers: 0,
+                followerEfficiency: 0.1,
+                followerAccumulator: 0,
                 monsters: {
                     'Shoggoth': {
                         count: 0,
@@ -3042,7 +3074,7 @@
                             type: 'miasma'
                         },
                         specialAbility: {
-                            trigger: 3,
+                            trigger: 10,
                             effect: {
                                 type: 'adventurerResistanceRecoveryTime',
                                 value: 1000  // 1秒（1000ミリ秒）のクールダウン削減
@@ -3056,7 +3088,7 @@
                         baseFollowerCost: 100,
                         followerCostGrowth: 1.4,
                         synergy: { partner: 'Star Spawn', effect: 0.27 },
-                        specialAbility: { trigger: 1, effect: { type: 'allMonsterEfficiency', value: 0.0009 } }
+                        specialAbility: { trigger: 10, effect: { type: 'allMonsterEfficiency', value: 0.0009 } }
                     }
                 },
                 upgrades: [],
@@ -3072,9 +3104,10 @@
 
                 // アンロック済みコンテンツの追跡用
                 unlockedContent: {
-                    adventurers: new Set(['Novice Explorer']), // 初期状態で解放されているアドベンチャラー
-                    monsters: new Set(['Shoggoth']), // 初期状態で解放されているモンスター
-                    upgrades: new Set(['Ritual Knowledge']) // 初期状態で解放されているアップグレード
+                    monsters: new Set(['Shoggoth']),
+                    adventurers: new Set(['Novice Explorer']),
+                    upgrades: new Set(['Ritual Knowledge']),
+                    resources: new Set()
                 },
                 pacts: {
                     active: [],              // 発動中の契約
@@ -3185,7 +3218,7 @@
                             type: 'miasma'
                         },
                         specialAbility: {
-                            trigger: 3,
+                            trigger: 10,
                             effect: {
                                 type: 'adventurerResistanceRecoveryTime',
                                 value: 1000
@@ -3199,7 +3232,7 @@
                         baseFollowerCost: 100,
                         followerCostGrowth: 1.42,
                         synergy: { partner: 'Star Spawn', effect: 0.27 },
-                        specialAbility: { trigger: 1, effect: { type: 'allMonsterEfficiency', value: 0.0009 } }
+                        specialAbility: { trigger: 10, effect: { type: 'allMonsterEfficiency', value: 0.0009 } }
                     }
                 },
                 upgrades: [],
@@ -3359,7 +3392,7 @@
                 'Cosmic Alignment': 3000,      // 中盤の重要な強化
                 'Forbidden Ritual': 8000,            // 中盤後半の強力な強化
                 'Hermetic Teachings': 35000,   // 後半の重要なアップグレード
-                'Cosmic Insight': 800000,      // エンドゲームの強力な強化
+                'Cosmic Insight': 80000,      // エンドゲームの強力な強化
                 'Astral Projection': 300000,   // 特殊な生産ボーナス
                 'Dimensional Rift': 500000,    // 非常に強力な相乗効果
                 'Necronomicon Fragment': 1200000, // 超後期の強化
@@ -3641,7 +3674,7 @@
                     'Seasoned Investigator': {
                         requirement: {
                             adventurers: {
-                                'Novice Explorer': { level: 3 }
+                                'Novice Explorer': { level: 3 }  // Novice Explorerがレベル3必要
                             }
                         },
                         description: "Requires Level 3 Novice Explorer"
@@ -4420,7 +4453,7 @@
                 }
             };
 
-            function formatNumber(num, decimalPlaces = 3) {
+            function formatNumber(num, decimalPlaces = 1) {
                 if (!isFinite(num)) {
                     return "∞";
                 }
@@ -4588,20 +4621,6 @@
             <p>Efficiency: <span id="followerEfficiency">${formatNumber(gameState.followerEfficiency * cultosBonus, 2)}</span></p>
             <p>Source Production: <span id="followerPerSecond">${formatNumber(production.sourceProduction, 1)}</span>/sec</p>
             <p>Next Recruit Cost: <span id="nextFollowerCost">${formatNumber(getCost('follower'), 0)}</span> source</p>
-            <div id="followerProductionDetails" class="production-details">
-                <p>Base Follower Production (without bonuses): ${formatNumber(baseFollowerProduction, 2)}/sec</p>
-                <p>Final Follower Production (with all bonuses): ${formatNumber(finalFollowerProduction, 2)}/sec</p>
-                ${cultosBonus > 1 ? `
-                <div class="cultos-bonus">
-                    <p>Cultos Bonus: +${((cultosBonus - 1) * 100).toFixed(1)}%</p>
-                    <p class="bonus-details">
-                        • Amount Bonus: +${(Math.min(gameState.cultos * 0.001, 0.5) * 100).toFixed(1)}%<br>
-                        • Magnitude Bonus: +${(Math.min(Math.floor(Math.log10(Math.max(1, gameState.cultos))) * 0.05, 0.3) * 100).toFixed(1)}%<br>
-                        • Efficiency Bonus: +${(Math.min(Math.floor(gameState.cultos / 1000) * 0.01, 0.2) * 100).toFixed(1)}%
-                    </p>
-                </div>
-                ` : ''}
-            </div>
         </div>
     `;
 
@@ -4689,123 +4708,96 @@
             }
 
             function updateButtonStates() {
-                const recruitFollowerBtn = document.getElementById('recruitFollowerBtn');
-                const summonButton = card.querySelector('.summon-monster-btn');
-                if (summonButton) {
-                    const canAfford = gameState.source >= nextCost && gameState.followers >= followerCost;
-                    const canSummon = gameState.followers >= followerCost && gameState.followers > Math.round(gameState.minimumFollowers);
-                    summonButton.disabled = !canSummon; // canSummonがfalseのときに無効化
-                    summonButton.classList.toggle('button-enabled', canAfford && canSummon);
-                    summonButton.classList.toggle('button-disabled', !canAfford || !canSummon);
-                }
-                const upgradeButtons = document.querySelectorAll('.buy-upgrade-btn');
-                const madnessButtons = document.querySelectorAll('.madness-btn');
-
-                // フォロワーリクルートボタンの状態更新
-                if (recruitFollowerBtn) {
-                    const canRecruit = gameState.source >= recruitCost; // recruitCostは適切に定義されていると仮定
-                    recruitFollowerBtn.disabled = !canRecruit;
-                    recruitFollowerBtn.classList.toggle('whiflash', canRecruit);
-                }
-
-                // 召喚ボタンの状態更新
-                summonButtons.forEach(button => {
-                    const monsterType = button.dataset.monster;
-                    const canSummon = checkSummonCondition(monsterType); // checkSummonConditionは適切に定義されていると仮定
-                    button.disabled = !canSummon;
-                    button.classList.toggle('flash', canSummon);
+                // モンスターカードのボタン状態を更新
+                const monsterCards = document.querySelectorAll('.monster-card');
+                monsterCards.forEach(card => {
+                    const summonButton = card.querySelector('.summon-monster-btn');
+                    if (summonButton) {
+                        const monsterType = summonButton.dataset.monster;
+                        const monster = gameState.monsters[monsterType];
+                        if (monster) {
+                            const canSummon = gameState.followers >= monster.baseFollowerCost;
+                            summonButton.disabled = !canSummon;
+                        }
+                    }
                 });
 
-                // アップグレードボタンの状態更新
+                // アップグレードボタンの状態を更新
+                const upgradeButtons = document.querySelectorAll('.buy-upgrade-btn');
                 upgradeButtons.forEach(button => {
                     const upgradeType = button.dataset.upgrade;
-                    const canUpgrade = checkUpgradeCondition(upgradeType); // checkUpgradeConditionは適切に定義されていると仮定
-                    button.disabled = !canUpgrade;
-                    button.classList.toggle('flash', canUpgrade);
+                    if (upgradeType && baseCosts[upgradeType]) {
+                        // アップグレードコストを baseCosts から直接取得
+                        const upgradeCost = Math.floor(baseCosts[upgradeType] * (gameState.upgradeCostMultiplier || 1));
+                        const canAfford = gameState.source >= upgradeCost;
+                        button.disabled = !canAfford;
+                        button.classList.toggle('button-affordable', canAfford);
+                        button.classList.toggle('button-disabled', !canAfford);
+                    }
                 });
 
+                const recruitButton = document.getElementById('recruitFollowerBtn');
+                if (recruitButton) {
+                    const isSealed = gameState.pacts?.active?.includes('1');
+                    recruitButton.style.display = isSealed ? 'none' : 'block';
+                    recruitButton.disabled = isSealed;
+                    recruitButton.classList.toggle('sealed-by-pact', isSealed);
+                }
+
                 // 狂気ボタンの状態更新
+                const madnessButtons = document.querySelectorAll('.madness-btn');
                 madnessButtons.forEach(button => {
-                    const index = button.dataset.index;
-                    const canAttemptMadness = checkMadnessCondition(index); // checkMadnessConditionは適切に定義されていると仮定
-                    button.disabled = !canAttemptMadness;
-                    button.classList.toggle('flash', canAttemptMadness);
+                    const index = parseInt(button.dataset.index);
+                    if (!isNaN(index) && gameState.adventurers[index]) {
+                        const adventurer = gameState.adventurers[index];
+                        const canAttempt = !adventurer.isMad &&
+                            !adventurer.isOnCooldown &&
+                            gameState.miasma >= adventurer.madnessCost;
+                        button.disabled = !canAttempt;
+                    }
                 });
+
+                // 契約による封印状態の確認と適用
+                if (gameState.pacts?.active?.includes('1')) {
+                    hideManualRecruitButtons();
+                }
             }
 
             function updateUpgradeSymbols() {
                 const symbolsContainer = document.getElementById('upgradeSymbols');
                 if (!symbolsContainer) return;
 
-                // コンテナのスタイルを設定
-                symbolsContainer.style.overflow = 'visible';
-                symbolsContainer.style.position = 'relative';
+                // コンテナをクリア
                 symbolsContainer.innerHTML = '';
 
-                gameState.upgrades.forEach(upgrade => {
-                    const container = document.createElement('div');
-                    container.className = 'upgrade-symbol';
-                    container.style.cssText = `
-            display: inline-block;
-            position: relative;
-            cursor: pointer;
-            margin: 0 5px;
-            overflow: visible;
-        `;
+                // 購入済みのアップグレードのシンボルを表示
+                for (const upgrade of gameState.upgrades) {
+                    if (upgradeSymbols[upgrade]) {
+                        const symbolSpan = document.createElement('span');
+                        symbolSpan.className = 'upgrade-symbol';
+                        symbolSpan.textContent = upgradeSymbols[upgrade];
 
-                    const symbol = document.createElement('span');
-                    symbol.textContent = upgradeSymbols[upgrade] || '';
+                        // tooltipを設定
+                        const tooltipText = upgradeEffects[upgrade];
+                        tippy(symbolSpan, {
+                            content: tooltipText,
+                            placement: 'bottom'
+                        });
 
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'upgrade-tooltip';
-                    tooltip.style.cssText = `
-            display: none;
-            position: absolute;
-            background-color: rgba(0, 0, 0, 0.95);
-            color: #e0e0e0;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #4CAF50;
-            font-size: 12px;
-            white-space: nowrap;
-            z-index: 9999;
-            pointer-events: none;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-bottom: 5px;
-            width: max-content;
-            max-width: 600px;
-            overflow: visible;
-        `;
-                    const tooltipText = upgradeEffects[upgrade] || 'No description available';
-                    tooltip.textContent = `${upgrade}: ${tooltipText}`;
-
-                    container.addEventListener('mouseenter', () => {
-                        tooltip.style.display = 'block';
-                    });
-                    container.addEventListener('mouseleave', () => {
-                        tooltip.style.display = 'none';
-                    });
-
-                    container.appendChild(symbol);
-                    container.appendChild(tooltip);
-                    symbolsContainer.appendChild(container);
-                });
+                        symbolsContainer.appendChild(symbolSpan);
+                    }
+                }
             }
 
             // 吹き出しを表示する関数
             let activeSpeechBubble = false;
 
-            // 吹き出しを表示する関数を修正
             // スピーチバブルの状態管理
             const speechBubbleState = {
                 activeSpeechBubble: false,
                 currentTimeout: null
             };
 
-            // セリフ管理のための状態オブジェクト
             // セリフ管理のための状態オブジェクト
             const bubbleState = {
                 activeBubbles: new Set(),
@@ -5109,7 +5101,7 @@
 
             function checkMadness(adventurer) {
                 const madnessChance = calculateMadnessChance(adventurer);
-                console.log('Madness check for:', adventurer.name, 'chance:', madnessChance);
+                //console.log('Madness check for:', adventurer.name, 'chance:', madnessChance);
 
                 const adventurerElement = document.querySelector(`#adventurer-${gameState.adventurers.indexOf(adventurer)}`);
                 if (!adventurerElement) {
@@ -5118,7 +5110,7 @@
                 }
 
                 if (Math.random() < madnessChance) {
-                    console.log('Madness check succeeded');
+                    // console.log('Madness check succeeded');
                     if (!adventurer.isMad) {
                         adventurer.isMad = true;
                         // 狂気に陥った時のセリフを必ず表示
@@ -5126,7 +5118,7 @@
                         if (dialogueList && dialogueList.mad && dialogueList.mad.length > 0) {
                             const madDialogues = dialogueList.mad;
                             const randomText = madDialogues[Math.floor(Math.random() * madDialogues.length)];
-                            console.log('Selected mad dialogue:', randomText);
+                            //       console.log('Selected mad dialogue:', randomText);
                             showSpeechBubble(adventurerElement, randomText, 5000, 'mad');
                         }
                     }
@@ -5138,7 +5130,7 @@
                         const resistDialogues = dialogueList.resist;
                         const randomText = resistDialogues[Math.floor(Math.random() * resistDialogues.length)];
                         showSpeechBubble(adventurerElement, randomText, 3000, 'resist');
-                        console.log('Selected resist dialogue:', randomText);
+                        // console.log('Selected resist dialogue:', randomText);
                     }
                     return false;
                 }
@@ -5626,37 +5618,41 @@ Collect Source, generate Miasma, and recruit followers to summon cosmic horrors!
             // CultosMinerのクリックイベントを追加
             document.getElementById('cultosminer').addEventListener('click', toggleMining);
 
-            // マイニングのオンオフを切り替える関数
+            // toggleMining関数を修正
             function toggleMining() {
-                const button = document.getElementById('toggleMining');
-                const indicator = document.getElementById('miningIndicator');
-                const statusText = document.getElementById('miningStatus');
-                const cultosSymbol = document.querySelector('.cultos-symbol');
-
                 isMiningActive = !isMiningActive;
 
-                // インジケーターの状態を更新
+                // インジケーターと UI の状態を更新
                 updateMiningIndicator();
-
-                // 既存の処理を維持
-                if (isMiningActive) {
-                    button.textContent = 'Stop Mining';
-                    cultosSymbol?.classList.add('active');
-                    cultosSymbol?.classList.remove('inactive');
-
-                    document.getElementById('sourceConsumptionRate').classList.remove('inactive');
-                    document.getElementById('miasmaConsumptionRate').classList.remove('inactive');
-                } else {
-                    button.textContent = 'Start Mining';
-                    cultosSymbol?.classList.remove('active');
-                    cultosSymbol?.classList.add('inactive');
-
-                    document.getElementById('sourceConsumptionRate').classList.add('inactive');
-                    document.getElementById('miasmaConsumptionRate').classList.add('inactive');
-                }
+                updateMiningUI(isMiningActive);
 
                 // マイニング状態を保存
                 localStorage.setItem('miningState', isMiningActive);
+            }
+
+            // 新しい関数: マイニングUIの更新を一元管理
+            function updateMiningUI(isActive) {
+                const button = document.getElementById('toggleMining');
+                const cultosSymbol = document.querySelector('.cultos-symbol');
+                const sourceConsumptionRate = document.getElementById('sourceConsumptionRate');
+                const miasmaConsumptionRate = document.getElementById('miasmaConsumptionRate');
+
+                if (button) {
+                    button.textContent = isActive ? 'Stop Mining' : 'Start Mining';
+                }
+
+                if (cultosSymbol) {
+                    cultosSymbol.classList.toggle('active', isActive);
+                    cultosSymbol.classList.toggle('inactive', !isActive);
+                }
+
+                if (sourceConsumptionRate) {
+                    sourceConsumptionRate.classList.toggle('inactive', !isActive);
+                }
+
+                if (miasmaConsumptionRate) {
+                    miasmaConsumptionRate.classList.toggle('inactive', !isActive);
+                }
             }
 
             function updateMiningIndicator() {
@@ -5693,12 +5689,16 @@ Collect Source, generate Miasma, and recruit followers to summon cosmic horrors!
                 if (!isMiningActive || !miningStatus.canMine) {
                     resetMiningRates();
                     updateConsumptionRates(0, 0, false);
-                    // cultos symbolの状態も更新
-                    const cultosSymbol = document.querySelector('.cultos-symbol');
-                    if (cultosSymbol) {
-                        cultosSymbol.classList.remove('active');
-                        cultosSymbol.classList.add('inactive');
+
+                    // マイニングが停止した際にボタンとUIの状態を更新
+                    if (isMiningActive) {
+                        isMiningActive = false;
+                        updateMiningUI(false);
+                        updateMiningIndicator();  // インジケーターも更新
+                        localStorage.setItem('miningState', 'false');
+                        logAction('Cultos mining stopped: Conditions not met');
                     }
+
                     return 0;
                 }
 
@@ -5730,10 +5730,14 @@ Collect Source, generate Miasma, and recruit followers to summon cosmic horrors!
                 };
 
                 if (gameState.source < currentCost.source || gameState.miasma < currentCost.miasma) {
+                    // リソース不足時のマイニング停止処理
                     isMiningActive = false;
                     resetMiningRates();
                     updateConsumptionRates(0, 0, false);
-                    logAction(`Cultos mining stopped: Insufficient resources`);
+                    updateMiningUI(false);
+                    updateMiningIndicator();
+                    localStorage.setItem('miningState', 'false');
+                    logAction('Cultos mining stopped: Insufficient resources');
                     return 0;
                 }
 
@@ -6320,15 +6324,6 @@ ${frame.bottom}
                     jumpToMadnessTableBtn.addEventListener('click', jumpToMadnessTable);
                 }
 
-                const toggleAllCardsBtn = document.getElementById('toggleAllMonsterCards');
-                if (toggleAllCardsBtn) {
-                    toggleAllCardsBtn.addEventListener('click', () => {
-                        const detailDivs = document.querySelectorAll('.monster-card-details');
-                        const isExpanded = !detailDivs[0].classList.contains('expanded');
-                        toggleMonsterCardDetails(isExpanded);
-                    });
-                }
-
                 // Back to Top button functionality is already handled by the existing code
             }
 
@@ -6352,71 +6347,74 @@ ${frame.bottom}
                 updateTimeAccelerationDisplay();
             }
 
-            function toggleMonsterCardDetails(expanded) {
-                try {
-                    const monsterCards = document.querySelectorAll('.monster-card-details');
-                    if (monsterCards.length === 0) {
-                        console.warn('No monster cards found');
-                        return;
-                    }
-
-                    // 現在表示されているカードを特定
-                    const currentCard = getCurrentVisibleCard();
-                    if (!currentCard) {
-                        console.warn('No visible card found');
-                        return;
-                    }
-
-                    // カードの相対位置を保存
-                    const cardRect = currentCard.getBoundingClientRect();
-                    const relativePosition = cardRect.top;
-
-                    // カードの展開/折りたたみを実行
-                    monsterCards.forEach(card => {
-                        if (card) {
-                            card.classList.toggle('expanded', expanded);
-                        }
-                    });
-
-                    // DOMの更新を待つ
-                    requestAnimationFrame(() => {
-                        // 新しい位置を計算して調整
-                        const newCardRect = currentCard.getBoundingClientRect();
-                        const offset = newCardRect.top - relativePosition;
-                        const headerHeight = getHeaderOffsets();
-
-                        window.scrollBy({
-                            top: offset,
-                            behavior: 'instant'
-                        });
-                    });
-
-                    // ボタンのテキストを更新
-                    const toggleAllBtn = document.getElementById('toggleAllMonsterCards');
-                    if (toggleAllBtn) {
-                        toggleAllBtn.textContent = expanded ? 'Collapse All Cards' : 'Expand All Cards';
-                    }
-
-                    localStorage.setItem('monsterCardsExpanded', expanded);
-                } catch (error) {
-                    console.error('Error in toggleMonsterCardDetails:', error);
-                }
-            }
-
+            // 現在表示されているカードを取得する関数を修正
             function getCurrentVisibleCard() {
-                const cards = document.querySelectorAll('.monster-card');
-                const headerHeight = getHeaderOffsets();
+                try {
+                    const cards = document.querySelectorAll('.monster-card');
+                    if (!cards || cards.length === 0) return null;
 
-                for (const card of cards) {
-                    const rect = card.getBoundingClientRect();
-                    // ヘッダーの高さを考慮して、画面内に表示されているカードを探す
-                    if (rect.top >= headerHeight && rect.top < window.innerHeight) {
-                        return card;
+                    const headerHeight = getHeaderOffsets();
+
+                    for (const card of cards) {
+                        const rect = card.getBoundingClientRect();
+                        if (rect && rect.top >= headerHeight && rect.top < window.innerHeight) {
+                            return card;
+                        }
                     }
-                }
 
-                return cards[0]; // デフォルトで最初のカードを返す
+                    return cards[0]; // デフォルトで最初のカードを返す
+                } catch (error) {
+                    console.warn('Error getting current visible card:', error);
+                    return null;
+                }
             }
+
+            let isAllCardsExpanded = true;
+
+            function toggleMonsterCardDetails(expanded) {
+                const monsterCards = document.querySelectorAll('.monster-card-details');
+                const toggleAllBtn = document.getElementById('toggleAllMonsterCards');
+
+                // 現在の状態を反転
+                isAllCardsExpanded = expanded;
+
+                monsterCards.forEach(card => {
+                    if (expanded) {
+                        card.style.maxHeight = '1000px';
+                        card.classList.add('expanded');
+                    } else {
+                        card.style.maxHeight = '0';
+                        card.classList.remove('expanded');
+                    }
+
+                    // プログレスバーの表示を切り替え
+                    const progressBar = card.closest('.monster-card')?.querySelector('.summon-progress-bar');
+                    if (progressBar) {
+                        progressBar.style.display = expanded ? 'none' : 'block';
+                    }
+                });
+
+                // ボタンのテキストを更新
+                if (toggleAllBtn) {
+                    toggleAllBtn.textContent = expanded ? 'Collapse All Cards' : 'Expand All Cards';
+                }
+            }
+
+            function setupMonsterCardToggle() {
+                const toggleAllBtn = document.getElementById('toggleAllMonsterCards');
+                if (!toggleAllBtn) return;
+
+                // クリックイベントを設定
+                toggleAllBtn.onclick = function () {
+                    toggleMonsterCardDetails(!isAllCardsExpanded);
+                };
+            }
+
+            // DOMContentLoadedイベントで初期化を確実に行う
+            document.addEventListener('DOMContentLoaded', () => {
+                setupMonsterCardToggle();
+            });
+
 
             function getHeaderOffsets() {
                 let totalOffset = 0;
@@ -6499,19 +6497,6 @@ ${frame.bottom}
                 }
             }
 
-            function restoreMonsterCardState() {
-                const isExpanded = localStorage.getItem('monsterCardsExpanded') === 'true';
-                const monsterCards = document.querySelectorAll('.monster-card-details');
-                const toggleBtns = document.querySelectorAll('.toggle-details');
-
-                monsterCards.forEach(card => {
-                    card.classList.toggle('expanded', isExpanded);
-                });
-
-                toggleBtns.forEach(btn => {
-                    btn.textContent = isExpanded ? '▲' : '▼';
-                });
-            }
 
             function updateTimeAccelerationDisplay() {
                 const display = document.getElementById('timeAccelerationDisplay');
@@ -6697,78 +6682,73 @@ ${frame.bottom}
                 return `Requires ${descriptions.join(' and ')}`;
             }
 
-            // checkUnlockCondition関数を修正
             function checkUnlockCondition(type, name) {
-                // 既にアンロック済みの場合は true を返す
-                if (gameState.unlockedContent?.[type]?.has(name)) {
+                // アンロック済みの場合は true を返す
+                if (gameState.unlockedContent[type].has(name)) {
                     return true;
                 }
 
                 const condition = unlockConditions[type]?.[name];
                 if (!condition) return false;
-
-                // 最初からアンロック済みの場合
-                if (condition.isUnlocked) {
-                    if (gameState.unlockedContent[type]) {
-                        gameState.unlockedContent[type].add(name);
-                    }
-                    return true;
-                }
+                if (condition.isUnlocked) return true;
 
                 const requirement = condition.requirement;
                 if (!requirement) return false;
 
-                let meetsRequirements = true;
-
                 // アドベンチャラーのレベル要件チェック
                 if (requirement.adventurers) {
-                    for (const [advName, data] of Object.entries(requirement.adventurers)) {
+                    for (const [advName, reqData] of Object.entries(requirement.adventurers)) {
+                        // 対象のアドベンチャラーを探す
                         const adventurer = gameState.adventurers.find(adv => adv.name === advName);
-                        if (!adventurer || adventurer.level < data.level) {
-                            meetsRequirements = false;
-                            break;
-                        }
-                    }
-                }
-
-                // アップグレード要件チェック
-                if (meetsRequirements && requirement.upgrades) {
-                    for (const upgrade of requirement.upgrades) {
-                        if (!gameState.upgrades.includes(upgrade)) {
-                            meetsRequirements = false;
-                            break;
+                        // レベル要件を満たしていない場合は false を返す
+                        if (!adventurer || adventurer.level < reqData.level) {
+                            return false;
                         }
                     }
                 }
 
                 // モンスター要件チェック
-                if (meetsRequirements && requirement.monsters) {
-                    for (const [monsterName, count] of Object.entries(requirement.monsters)) {
-                        if (!gameState.monsters[monsterName] || gameState.monsters[monsterName].count < count) {
-                            meetsRequirements = false;
-                            break;
+                if (requirement.monsters) {
+                    for (const [monsterType, count] of Object.entries(requirement.monsters)) {
+                        if (!gameState.monsters[monsterType] || gameState.monsters[monsterType].count < count) {
+                            return false;
+                        }
+                    }
+                }
+
+                // アップグレード要件チェック
+                if (requirement.upgrades) {
+                    for (const upgrade of requirement.upgrades) {
+                        if (!gameState.upgrades.includes(upgrade)) {
+                            return false;
                         }
                     }
                 }
 
                 // モンスタータイプの数チェック
-                if (meetsRequirements && requirement.monsterTypes) {
+                if (requirement.monsterTypes) {
                     const uniqueMonsterTypes = Object.values(gameState.monsters)
                         .filter(monster => monster.count > 0).length;
                     if (uniqueMonsterTypes < requirement.monsterTypes) {
-                        meetsRequirements = false;
+                        return false;
                     }
                 }
 
-                if (meetsRequirements) {
-                    // アンロック状態を永続的に保存
-                    if (gameState.unlockedContent[type]) {
-                        gameState.unlockedContent[type].add(name);
+                // モンスターレベル要件チェック
+                if (requirement.monsterLevel) {
+                    const hasHighLevelMonster = Object.values(gameState.monsters)
+                        .some(monster => monster.level >= requirement.monsterLevel);
+                    if (!hasHighLevelMonster) {
+                        return false;
                     }
-                    return true;
                 }
 
-                return false;
+                // すべての条件を満たした場合
+                if (gameState.unlockedContent[type]) {
+                    gameState.unlockedContent[type].add(name);
+                }
+
+                return true;
             }
 
             // updateUnlockStatus関数を修正
@@ -6780,8 +6760,8 @@ ${frame.bottom}
                 let unlockOccurred = false;
 
                 try {
-                    // アドベンチャラーのアンロックチェック
-                    gameState.adventurers.forEach(adventurer => {
+                    // アドベンチャラーのアンロック処理を修正
+                    for (const adventurer of gameState.adventurers) {
                         if (!gameState.unlockedContent.adventurers.has(adventurer.name)) {
                             if (checkUnlockCondition('adventurers', adventurer.name)) {
                                 gameState.unlockedContent.adventurers.add(adventurer.name);
@@ -6790,7 +6770,7 @@ ${frame.bottom}
                                 unlockOccurred = true;
                             }
                         }
-                    });
+                    }
 
                     // アップグレードのアンロックチェック
                     upgradeOrder.forEach(upgradeName => {
@@ -6830,6 +6810,8 @@ ${frame.bottom}
 
                     if (unlockOccurred && !skipDisplayUpdate) {
                         updateDisplaysAfterUnlock();
+                        // アドベンチャラーカードの更新を明示的に呼び出し
+                        updateAdventurerCards();
                     }
 
                 } catch (error) {
@@ -6863,103 +6845,6 @@ ${frame.bottom}
         overflow-y: auto;
     `;
                 document.body.appendChild(container);
-            }
-
-            // 通知表示関数を改善
-            function showUnlockNotification(type, name) {
-                try {
-                    let container = document.getElementById('notifications-container');
-                    if (!container) {
-                        initializeNotificationSystem();
-                        container = document.getElementById('notifications-container');
-                    }
-
-                    // 通知タイプの設定
-                    const notificationTypes = {
-                        monster: {
-                            icon: '🐙',
-                            color: '#4CAF50',
-                            title: 'Monster'
-                        },
-                        adventurer: {
-                            icon: '👤',
-                            color: '#42A5F5',
-                            title: 'Adventurer'
-                        },
-                        upgrade: {
-                            icon: '⭐',
-                            color: '#FFC107',
-                            title: 'Upgrade'
-                        },
-                        resource: {
-                            icon: '💎',
-                            color: '#E91E63',
-                            title: 'Resource'
-                        }
-                    };
-
-                    const typeInfo = notificationTypes[type] || {
-                        icon: '🔓',
-                        color: '#9C27B0',
-                        title: 'Content'
-                    };
-
-                    // 通知要素の作成
-                    const notification = document.createElement('div');
-                    notification.className = 'game-notification';
-                    notification.style.cssText = `
-            background: rgba(26, 26, 26, 0.95);
-            border: 2px solid ${typeInfo.color};
-            border-radius: 8px;
-            padding: 15px;
-            color: #e0e0e0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            width: 300px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            transform: translateX(100%);
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-        `;
-
-                    notification.innerHTML = `
-            <div style="font-size: 24px;">${typeInfo.icon}</div>
-            <div>
-                <h4 style="margin: 0 0 5px 0; color: ${typeInfo.color}">
-                    New ${typeInfo.title} Unlocked!
-                </h4>
-                <p style="margin: 0;">${name}</p>
-            </div>
-        `;
-
-                    container.appendChild(notification);
-
-                    // アニメーション適用
-                    requestAnimationFrame(() => {
-                        notification.style.opacity = '1';
-                        notification.style.transform = 'translateX(0)';
-                    });
-
-                    // ログに記録
-                    logAction(`New ${typeInfo.title} unlocked: ${name}`);
-
-                    // 5秒後に通知を削除
-                    setTimeout(() => {
-                        notification.style.opacity = '0';
-                        notification.style.transform = 'translateX(100%)';
-                        setTimeout(() => {
-                            if (notification.parentNode) {
-                                notification.remove();
-                            }
-                        }, 300);
-                    }, 5000);
-
-                } catch (error) {
-                    console.error('Error showing notification:', error);
-                    debug(`Failed to show notification for ${type}: ${name} - ${error.message}`);
-                }
             }
 
             // 通知コンテナをDOMに追加する関数
@@ -7137,52 +7022,35 @@ ${frame.bottom}
 
             // アンロック状態をチェックする関数を修正
             function checkNewUnlocks() {
-                let unlockOccurred = false;
+                // 初期アンロックのリスト
+                const initialUnlocks = {
+                    monsters: ['Shoggoth'],
+                    adventurers: ['Novice Explorer'],
+                    upgrades: ['Ritual Knowledge']
+                };
+                // 各カテゴリーのアンロック条件をチェック
+                for (const category in unlockConditions) {
+                    for (const [itemId, condition] of Object.entries(unlockConditions[category])) {
+                        // 初期アンロックの場合はスキップ
+                        if (initialUnlocks[category]?.includes(itemId)) {
+                            continue;
+                        }
 
-                Object.entries(cardConfigs).forEach(([type, config]) => {
-                    for (const id in config.conditions) {
-                        const wasUnlocked = config.lastUnlockState[id];
-                        const isNowUnlocked = checkUnlockCondition(type, id);
-
-                        if (!wasUnlocked && isNowUnlocked) {
-                            // 新しくアンロックされた
-                            config.lastUnlockState[id] = true;
-                            unlockOccurred = true;
-
-                            // カードを見つけてアニメーション
-                            const cardId = `${config.prefix}${id.replace(/\s+/g, '-')}`;
-                            const card = document.getElementById(cardId);
-                            if (card) {
-                                animateUnlock(card);
-
-                                // アンロックメッセージをログに追加  
-                                const typeName = type.slice(0, -1); // 末尾の's'を削除
-                                logAction(`New ${typeName} unlocked: ${id}`);
-
-                                // アンロック通知を表示
-                                showUnlockNotification(typeName, id);
-                            }
-
-                            // アンロック状態を永続的に保存
-                            if (!gameState.unlockedContent[type]) {
-                                gameState.unlockedContent[type] = new Set();
-                            }
-                            gameState.unlockedContent[type].add(id);
+                        if (!gameState.unlockedContent[category].has(itemId) && checkUnlockCondition(category, itemId)) {
+                            gameState.unlockedContent[category].add(itemId);
+                            showUnlockNotification(category, itemId);
+                            updateDisplaysAfterUnlock();
                         }
                     }
-                });
-
-                // アンロックが発生した場合、UIを更新
-                if (unlockOccurred) {
-                    updateAllDisplays();
                 }
             }
 
-            // アンロック通知を表示する関数
             function showUnlockNotification(type, name) {
-                const notification = document.createElement('div');
-                notification.className = 'unlock-notification';
-                notification.innerHTML = `
+                try {
+                    // 通知要素の作成
+                    const notification = document.createElement('div');
+                    notification.className = 'unlock-notification';
+                    notification.innerHTML = `
             <div class="notification-icon ${type}-icon"></div>
             <div class="notification-content">
                 <h4>New ${type} Unlocked!</h4>
@@ -7190,26 +7058,41 @@ ${frame.bottom}
             </div>
         `;
 
-                // 通知のスタイル  
-                notification.style.cssText = `
+                    // 既存の通知を確認し、位置を調整
+                    const existingNotifications = document.querySelectorAll('.unlock-notification');
+                    const offset = existingNotifications.length * 70;
+
+                    // 通知のスタイル
+                    notification.style.cssText = `
             position: fixed;
-            top: 20px;
+            top: ${20 + offset}px;
             right: 20px;
-            background: rgba(26, 26, 26, 0.95);  
+            background: rgba(26, 26, 26, 0.95);
             border: 2px solid #4CAF50;
             border-radius: 8px;
             padding: 15px;
             color: #e0e0e0;
             z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 250px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             animation: slideIn 0.5s ease-out, fadeOut 0.5s ease-in 4.5s;
+            pointer-events: none;
         `;
 
-                document.body.appendChild(notification);
+                    document.body.appendChild(notification);
 
-                // 5秒後に通知を消す
-                setTimeout(() => {
-                    notification.remove();
-                }, 5000);
+                    // 5秒後に通知を消す（フェードアウトアニメーション付き）
+                    setTimeout(() => {
+                        notification.style.animation = 'fadeOut 0.5s ease-in forwards';
+                        setTimeout(() => notification.remove(), 500);
+                    }, 4500);
+
+                } catch (error) {
+                    console.error('Error showing unlock notification:', error);
+                }
             }
 
             // アンロックアニメーション
@@ -7320,21 +7203,11 @@ ${frame.bottom}
             let isSummoning = false;
 
             function summonMonster(type) {
-                console.log("Summoning attempt:", {
-                    type,
-                    isSummoning,
-                    currentFollowers: gameState.followers,
-                    currentSource: gameState.source,
-                    sourceCost: getCost(type),
-                    followerCost: Math.floor(gameState.monsters[type].baseFollowerCost *
-                        Math.pow(gameState.monsters[type].followerCostGrowth, gameState.monsters[type].count)),
-                    minimumFollowers: gameState.pacts?.active?.reduce((min, pact) => {
-                        const effect = PACTS[pact]?.effects?.find(e => e.type === 'minimumFollowers');
-                        return effect ? Math.max(min, effect.value) : min;
-                    }, 0) ?? 0
-                });
+                if (isSummoning) {
+                    debug("Summoning already in progress");
+                    return;
+                }
 
-                if (isSummoning) return;
                 isSummoning = true;
 
                 try {
@@ -7348,12 +7221,6 @@ ${frame.bottom}
                     const followerCost = Math.floor(monsterData.baseFollowerCost *
                         Math.pow(monsterData.followerCostGrowth, monsterData.count));
 
-                    // リソースチェック
-                    console.log("Resource check:", {
-                        hasEnoughSource: gameState.source >= sourceCost,
-                        hasEnoughFollowers: gameState.followers >= followerCost
-                    });
-
                     if (gameState.source < sourceCost || gameState.followers < followerCost) {
                         console.log("Not enough resources");
                         return;
@@ -7364,12 +7231,6 @@ ${frame.bottom}
                     gameState.followers -= followerCost;
                     monsterData.count++;
 
-                    console.log("Monster summoned successfully:", {
-                        newFollowerCount: gameState.followers,
-                        newSourceCount: gameState.source,
-                        newMonsterCount: monsterData.count
-                    });
-
                     // UI更新とログ
                     logAction(`Summoned 1 ${type} for ${formatNumber(sourceCost)} source and ${formatNumber(followerCost)} followers`);
                     updateMonsterCards();
@@ -7379,11 +7240,12 @@ ${frame.bottom}
                 } catch (error) {
                     console.error("Summoning error:", error);
                 } finally {
-                    isSummoning = false;
+                    setTimeout(() => {
+                        isSummoning = false;
+                    }, 50);
                 }
             }
 
-            // アップグレード購入関数の修正
             function buyUpgrade(upgrade) {
                 debug(`buyUpgrade called for ${upgrade}`);
 
@@ -7422,23 +7284,34 @@ ${frame.bottom}
                 return Math.max(0, sourceDifference / productionPerSecond);
             }
 
-            // シナジー効果の計算
             function calculateSynergyEffects() {
-                let synergyEffects = {};
+                let synergyEffects = {
+                    source: 1,
+                    miasma: 1,
+                    all: 1
+                };
 
-                for (let monster in gameState.monsters) {
-                    const monsterData = gameState.monsters[monster];
-                    if (monsterData.synergy && gameState.monsters[monsterData.synergy.partner].count > 0) {
-                        synergyEffects[monster] = {
-                            effect: monsterData.synergy.effect,
-                            type: monsterData.synergy.type || 'all'
-                        };
-                        synergyEffects[monsterData.synergy.partner] = {
-                            effect: monsterData.synergy.effect,
-                            type: monsterData.synergy.type || 'all'
-                        };
+                // アクティブなモンスターを特定
+                const activeMonsters = new Set(
+                    Object.entries(gameState.monsters)
+                        .filter(([_, monster]) => monster.count > 0)
+                        .map(([type, _]) => type)
+                );
+
+                // シナジー効果の計算
+                activeMonsters.forEach(monsterType => {
+                    const monster = gameState.monsters[monsterType];
+                    if (monster.synergy && activeMonsters.has(monster.synergy.partner)) {
+                        const effectType = monster.synergy.type || 'all';
+                        const effectValue = monster.synergy.effect;
+
+                        // シナジー効果を乗算で適用
+                        synergyEffects[effectType] *= (1 + effectValue);
+
+                        // デバッグログ
+                        debug(`Synergy activated: ${monsterType} with ${monster.synergy.partner}, type: ${effectType}, value: ${effectValue}`);
                     }
-                }
+                });
 
                 return synergyEffects;
             }
@@ -7446,88 +7319,86 @@ ${frame.bottom}
             function applySpecialAbilities() {
                 for (const monsterType in gameState.monsters) {
                     const monster = gameState.monsters[monsterType];
-                    if (monster && monster.specialAbility && monster.count > 0) {
-                        const triggerCount = Math.floor(monster.count / monster.specialAbility.trigger);
-                        if (triggerCount > 0) {
-                            const effect = monster.specialAbility.effect;
-                            switch (effect.type) {
-                                case 'allMonsterEfficiency':
-                                    const bonus = Math.pow(1 + effect.value, triggerCount);
-                                    for (const targetMonster in gameState.monsters) {
-                                        gameState.monsters[targetMonster].sourceEfficiency *= bonus;
-                                        gameState.monsters[targetMonster].miasmaEfficiency *= bonus;
-                                    }
-                                    break;
+                    if (!monster || !monster.specialAbility || monster.count === 0) continue;
 
-                                case 'followerEfficiencyMultiplier':
-                                    gameState.followerEfficiency *= Math.pow(1 + effect.value, monster.count);
-                                    break;
+                    const triggerCount = Math.floor(monster.count / monster.specialAbility.trigger);
+                    if (triggerCount === 0) continue;
 
-                                case 'followerEfficiency':
-                                    gameState.followerEfficiency *= Math.pow(1 + effect.value, triggerCount);
-                                    break;
-
-                                case 'sourceProduction':
-                                    for (const targetMonster in gameState.monsters) {
-                                        gameState.monsters[targetMonster].sourceEfficiency *=
-                                            Math.pow(1 + effect.value, triggerCount);
-                                    }
-                                    break;
-
-                                case 'upgradeEffect':
-                                    // アップグレード効果の増強
-                                    const upgradeBonus = Math.pow(1 + effect.value, triggerCount);
-                                    gameState.upgradeEffectMultiplier =
-                                        (gameState.upgradeEffectMultiplier || 1) * upgradeBonus;
-                                    break;
-
-                                case 'followerProduction':
-                                    // フォロワー生産量の増加
-                                    gameState.followerProductionBonus =
-                                        (gameState.followerProductionBonus || 0) +
-                                        (effect.value * triggerCount);
-                                    break;
-
-                                case 'cosmicResonance':
-                                    // すべての生産に影響する宇宙共鳴効果
-                                    const resonanceBonus = Math.pow(1 + effect.value, triggerCount);
-                                    gameState.cosmicResonanceMultiplier =
-                                        (gameState.cosmicResonanceMultiplier || 1) * resonanceBonus;
-                                    break;
-
-                                case 'upgradeCost':
-                                    // アップグレードコストの削減
-                                    const totalDiscount = Math.min(
-                                        effect.maxDiscount,
-                                        effect.value * triggerCount
-                                    );
-                                    gameState.upgradeCostMultiplier =
-                                        (gameState.upgradeCostMultiplier || 1) * (1 - totalDiscount);
-                                    break;
-
-                                case 'adventurerResistanceRecoveryTime':
-                                    // アドベンチャラーの抵抗クールダウン時間削減
-                                    gameState.adventurerCooldownReduction =
-                                        (gameState.adventurerCooldownReduction || 0) +
-                                        (effect.value * triggerCount);
-                                    break;
-
-                                case 'miasmaEfficiency':
-                                    // ミアスマ効率の増加
-                                    const miasmaBonus = Math.pow(1 + effect.value, triggerCount);
-                                    for (const targetMonster in gameState.monsters) {
-                                        gameState.monsters[targetMonster].miasmaEfficiency *= miasmaBonus;
-                                    }
-                                    break;
-
-                                case 'madnessChance':
-                                    // 狂気チャンスの増加
-                                    gameState.madnessChanceMultiplier =
-                                        (gameState.madnessChanceMultiplier || 1) *
-                                        Math.pow(1 + effect.value, triggerCount);
-                                    break;
+                    const effect = monster.specialAbility.effect;
+                    switch (effect.type) {
+                        case 'allMonsterEfficiency':
+                            // すべてのモンスターの効率を上昇（上限なし）
+                            const efficiencyBonus = 1 + (effect.value * triggerCount);
+                            for (const targetMonster in gameState.monsters) {
+                                gameState.monsters[targetMonster].sourceEfficiency *= efficiencyBonus;
+                                gameState.monsters[targetMonster].miasmaEfficiency *= efficiencyBonus;
                             }
-                        }
+                            debug(`Applied all monster efficiency bonus: +${((efficiencyBonus - 1) * 100).toFixed(1)}%`);
+                            break;
+
+                        case 'madnessChance':
+                            // 狂気チャンス増加（最大20%まで）
+                            const maxMadnessBonus = 0.20;
+                            const madnessBonus = Math.min(effect.value * triggerCount, maxMadnessBonus);
+                            gameState.madnessChanceMultiplier = 1 + madnessBonus;
+                            debug(`Applied madness chance modifier: +${(madnessBonus * 100).toFixed(1)}% (max: 20%)`);
+                            break;
+
+                        case 'miasmaEfficiency':
+                            // ミアスマ効率上昇（上限なし）
+                            const miasmaBonus = Math.pow(1 + effect.value, triggerCount);
+                            for (const targetMonster in gameState.monsters) {
+                                gameState.monsters[targetMonster].miasmaEfficiency *= miasmaBonus;
+                            }
+                            debug(`Applied miasma efficiency bonus: x${miasmaBonus.toFixed(2)}`);
+                            break;
+
+                        case 'sourceProduction':
+                            // Source生産量上昇（上限なし）
+                            const sourceBonus = Math.pow(1 + effect.value, triggerCount);
+                            for (const targetMonster in gameState.monsters) {
+                                gameState.monsters[targetMonster].sourceEfficiency *= sourceBonus;
+                            }
+                            debug(`Applied source production bonus: x${sourceBonus.toFixed(2)}`);
+                            break;
+
+                        case 'upgradeEffect':
+                            // アップグレード効果増強（上限なし）
+                            const upgradeBonus = 1 + (effect.value * triggerCount);
+                            gameState.upgradeEffectMultiplier = (gameState.upgradeEffectMultiplier || 1) * upgradeBonus;
+                            debug(`Applied upgrade effect multiplier: x${upgradeBonus.toFixed(2)}`);
+                            break;
+
+                        case 'followerProduction':
+                            // フォロワー生産量増加（上限なし）
+                            const followerBonus = effect.value * triggerCount;
+                            gameState.followerProductionBonus = (gameState.followerProductionBonus || 0) + followerBonus;
+                            debug(`Applied follower production bonus: +${(followerBonus * 100).toFixed(1)}%`);
+                            break;
+
+                        case 'cosmicResonance':
+                            // 宇宙共鳴効果（全体の生産量増加、上限なし）
+                            const resonanceBonus = Math.pow(1 + effect.value, triggerCount);
+                            gameState.cosmicResonanceMultiplier = (gameState.cosmicResonanceMultiplier || 1) * resonanceBonus;
+                            debug(`Applied cosmic resonance multiplier: x${resonanceBonus.toFixed(2)}`);
+                            break;
+
+                        case 'upgradeCost':
+                            // アップグレードコスト削減（指定された最大値まで）
+                            const totalDiscount = Math.min(effect.value * triggerCount, effect.maxDiscount);
+                            gameState.upgradeCostMultiplier = Math.max(0.1, (1 - totalDiscount));
+                            debug(`Applied upgrade cost reduction: -${(totalDiscount * 100).toFixed(1)}%`);
+                            break;
+
+                        case 'adventurerResistanceRecoveryTime':
+                            // アドベンチャラーの抵抗クールダウン時間削減（最小500ms）
+                            const cooldownReduction = effect.value * triggerCount;
+                            gameState.adventurerCooldownReduction = Math.min(
+                                (gameState.adventurerCooldownReduction || 0) + cooldownReduction,
+                                gameState.adventurerBaseCooldown - 500
+                            );
+                            debug(`Applied adventurer cooldown reduction: ${cooldownReduction}ms`);
+                            break;
                     }
                 }
 
@@ -7655,7 +7526,6 @@ ${frame.bottom}
                 }
             }
 
-            // Optimized update upgrade grid
             function updateUpgradeGrid() {
                 const grid = document.getElementById('upgradeGrid');
                 if (!grid) return;
@@ -7685,24 +7555,29 @@ ${frame.bottom}
                         card = document.createElement('div');
                         card.id = `upgrade-${upgrade}`;
                         card.className = 'upgrade-card';
+
+                        // tooltipのコンテンツを作成
+                        const tooltipText = getUpgradeEffectDescription(upgrade);
+
                         card.innerHTML = `
                 <div class="upgrade-card-header">
-                    <h3><span class="upgrade-symbol">${upgradeSymbols[upgrade]}</span>${upgrade}</h3>
+                    <h3>
+                        <span class="upgrade-symbol" title="${tooltipText}">${upgradeSymbols[upgrade] || ''}</span>
+                        ${upgrade}
+                    </h3>
                     <div class="upgrade-cost">Cost: </div>
                 </div>
                 <div class="upgrade-description">${upgradeEffects[upgrade]}</div>
                 <div class="unlock-requirement"></div>
-                <button onclick="buyUpgrade('${upgrade}')" disabled>Purchase</button>
+                <button class="buy-upgrade-btn" data-upgrade="${upgrade}" disabled>Purchase</button>
             `;
                         grid.appendChild(card);
                     }
 
                     // アンロック状態の確認
                     const isUnlocked = checkUnlockCondition('upgrades', upgrade);
-                    if (card.classList.contains('locked') !== !isUnlocked) {
-                        card.classList.toggle('locked', !isUnlocked);
-                        card.classList.toggle('unlocked', isUnlocked);
-                    }
+                    card.classList.toggle('locked', !isUnlocked);
+                    card.classList.toggle('unlocked', isUnlocked);
 
                     // アンロック条件の表示を更新
                     const unlockReqElement = card.querySelector('.unlock-requirement');
@@ -7717,31 +7592,18 @@ ${frame.bottom}
                     // コストと購入ボタンの更新
                     const cost = Math.floor(baseCosts[upgrade] * (gameState.upgradeCostMultiplier || 1));
                     const costElement = card.querySelector('.upgrade-cost');
-                    if (costElement && costElement.textContent !== `Cost: ${formatNumber(cost)} source`) {
+                    if (costElement) {
                         costElement.textContent = `Cost: ${formatNumber(cost)} source`;
                     }
 
-                    const button = card.querySelector('button');
+                    const button = card.querySelector('.buy-upgrade-btn');
                     if (button) {
                         const canAfford = sourceCount >= cost && isUnlocked;
-                        if (button.disabled !== !canAfford) {
-                            button.disabled = !canAfford;
-                            button.classList.toggle('affordable', canAfford);
-                        }
+                        button.disabled = !canAfford;
+                        button.classList.toggle('button-enabled', canAfford);
+                        button.classList.toggle('button-disabled', !canAfford);
                     }
                 }
-            }
-
-            function calculateUpgradeBoost() {
-                let boost = 1;
-
-                // 各アップグレードの効果を適用
-                if (gameState.upgrades.includes('Hiroshi Sakamoto`s Paper')) {
-                    boost *= 1.5; // 基本ボーナス
-                }
-                // 他のアップグレードの効果も必要に応じて追加
-
-                return boost;
             }
 
             function updateUpgradeCards() {
@@ -7802,6 +7664,82 @@ ${frame.bottom}
 
                 // Update upgrade symbols
                 updateUpgradeSymbols();
+            }
+
+            function checkUnlockCondition(type, name) {
+                if (gameState.unlockedContent[type].has(name)) {
+                    return true;
+                }
+                const condition = unlockConditions[type]?.[name];
+                if (!condition) return false;
+                if (condition.isUnlocked) return true;
+
+                const requirement = condition.requirement;
+                if (!requirement) return false;
+
+                // アドベンチャラーのレベル要件チェック
+                if (requirement.adventurers) {
+                    for (const [advName, reqData] of Object.entries(requirement.adventurers)) {
+                        const adventurer = gameState.adventurers.find(adv => adv.name === advName);
+                        // ここで reqData.level を使用するように修正
+                        if (!adventurer || adventurer.level < reqData.level) {
+                            return false;
+                        }
+                    }
+                }
+
+                // Check each requirement type
+                if (requirement.monsters) {
+                    for (const [monsterType, count] of Object.entries(requirement.monsters)) {
+                        if (!gameState.monsters[monsterType] || gameState.monsters[monsterType].count < count) {
+                            return false;
+                        }
+                    }
+                }
+
+                if (requirement.upgrades) {
+                    for (const upgrade of requirement.upgrades) {
+                        if (!gameState.upgrades.includes(upgrade)) {
+                            return false;
+                        }
+                    }
+                }
+
+                if (requirement.monsterTypes) {
+                    const uniqueMonsters = Object.values(gameState.monsters)
+                        .filter(monster => monster.count > 0).length;
+                    if (uniqueMonsters < requirement.monsterTypes) {
+                        return false;
+                    }
+                }
+
+                if (requirement.monsterLevel) {
+                    const hasHighLevelMonster = Object.values(gameState.monsters)
+                        .some(monster => monster.level >= requirement.monsterLevel);
+                    if (!hasHighLevelMonster) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            function calculateUpgradeBoost() {
+                let boost = 1;
+
+                // 各アップグレードの効果を適用
+                if (gameState.upgrades.includes('Hiroshi Sakamoto`s Paper')) {
+                    boost *= 1.5; // 基本ボーナス
+                }
+                // 他のアップグレードの効果も必要に応じて追加
+
+                return boost;
+            }
+
+            function canAffordUpgrade(upgradeId) {
+                const cost = Math.floor((upgradeDefinitions[upgradeId]?.cost || baseCosts[upgradeId] || 100) *
+                    (gameState.upgradeCostMultiplier || 1));
+                return gameState.source >= cost && !gameState.upgrades.includes(upgradeId);
             }
 
             // アップグレード効果の説明を取得する関数
@@ -8097,7 +8035,7 @@ ${frame.bottom}
                     updateElementText(adventurerElement, '.adventurer-level', adventurer.level);
                     updateElementText(adventurerElement, '.miasma-requirement', formatNumber(Math.floor(adventurer.miasmaRequired)));
                     updateElementText(adventurerElement, '.follower-production', formatNumber(adventurer.followerProduction, 1));
-                    updateElementText(adventurerElement, '.madness-chance', (adventurer.madnessChance * 100).toFixed(0));
+                    updateElementText(adventurerElement, '.madness-chance', (calculateFinalMadnessChance(adventurer) * 100).toFixed(0));
 
                     // 状態表示の更新
                     const statusText = adventurer.isMad ? 'Mad' :
@@ -8172,6 +8110,52 @@ ${frame.bottom}
                 });
             }
 
+            function calculateMadnessChance(adventurer) {
+                let finalChance = adventurer.madnessChance;
+
+                // This Manの特殊能力による補正（上限20%までに制限）
+                const maxMadnessBonus = 0.20; // 最大20%の補正
+                const thisManBonus = (gameState.madnessChanceMultiplier || 1) - 1;
+                const clampedBonus = Math.min(thisManBonus, maxMadnessBonus);
+
+                finalChance *= (1 + clampedBonus);
+
+                // 契約効果の適用
+                if (gameState.pacts?.commonMultiplier) {
+                    finalChance *= gameState.pacts.commonMultiplier;
+                }
+
+                // 最終的な確率を0～1の範囲に制限
+                return Math.min(Math.max(finalChance, 0), 1);
+            }
+
+            function calculateFinalMadnessChance(adventurer) {
+                let finalChance = adventurer.madnessChance;
+
+                // モンスターの特殊能力による影響を計算（重複適用を防ぐ）
+                let totalMonsterBonus = 0;
+                for (let monsterType in gameState.monsters) {
+                    const monster = gameState.monsters[monsterType];
+                    if (monster.count > 0 && monster.specialAbility?.effect?.type === 'madnessChance') {
+                        const triggerCount = Math.floor(monster.count / monster.specialAbility.trigger);
+                        if (triggerCount > 0) {
+                            totalMonsterBonus += monster.specialAbility.effect.value * triggerCount;
+                        }
+                    }
+                }
+
+                // モンスターボーナスを一括適用
+                finalChance *= (1 + totalMonsterBonus);
+
+                // 契約効果の適用
+                if (gameState.pacts?.commonMultiplier) {
+                    finalChance *= gameState.pacts.commonMultiplier;
+                }
+
+                // 最終的な確率を0～1の範囲に制限
+                return Math.min(Math.max(finalChance, 0), 1);
+            }
+
             // ヘルパー関数：要素のテキストを安全に更新
             function updateElementText(parentElement, selector, text) {
                 const element = parentElement.querySelector(selector);
@@ -8193,6 +8177,7 @@ ${frame.bottom}
                 const currentTime = Date.now();
                 const adventurer = gameState.adventurers[index];
 
+
                 if (!adventurer || adventurer.cooldownEndTime > currentTime) {
                     return;
                 }
@@ -8213,7 +8198,9 @@ ${frame.bottom}
 
                 // madnessChanceの計算を修正
                 const baseChance = adventurer.madnessChance;
-                let finalChance = baseChance;
+                let finalChance = calculateFinalMadnessChance(adventurer);
+
+                debug(`Attempting madness with chance: ${finalChance}`);
 
                 // モンスターの特殊能力による影響を計算
                 for (let monsterType in gameState.monsters) {
@@ -8386,8 +8373,8 @@ ${frame.bottom}
                 const miasmaRate = baseProduction.miasmaProduction;
 
                 // 生産量に基づいて必要最低数を計算
-                const sourceBasedMin = Math.floor(sourceRate / 666);
-                const miasmaBasedMin = Math.floor(miasmaRate / 666);
+                const sourceBasedMin = Math.floor(sourceRate / 1000);
+                const miasmaBasedMin = Math.floor(miasmaRate / 500);
 
                 return Math.max(sourceBasedMin, miasmaBasedMin, 1); // 最低1人は必要
             }
@@ -8402,52 +8389,121 @@ ${frame.bottom}
 
             // 最終的な生産量の計算関数
             function calculateResourceProduction() {
+                // 基本生産量の初期化
                 let sourceProduction = gameState.followers * gameState.followerEfficiency;
                 let miasmaProduction = 0;
                 let followerProduction = 0;
 
+                // シナジー効果を計算（加算方式）
+                const synergyEffects = {
+                    source: 0,
+                    miasma: 0,
+                    all: 0
+                };
+
+                // モンスターのシナジー効果を計算
+                for (const [monsterType, monster] of Object.entries(gameState.monsters)) {
+                    if (monster.count > 0 && monster.synergy) {
+                        const partnerMonster = gameState.monsters[monster.synergy.partner];
+                        if (partnerMonster && partnerMonster.count > 0) {
+                            const synergyBonus = monster.synergy.effect;
+                            switch (monster.synergy.type) {
+                                case 'source':
+                                    synergyEffects.source += synergyBonus;
+                                    break;
+                                case 'miasma':
+                                    synergyEffects.miasma += synergyBonus;
+                                    break;
+                                case 'all':
+                                    synergyEffects.all += synergyBonus;
+                                    break;
+                            }
+                        }
+                    }
+                }
+
                 // モンスターからの生産量を計算
-                for (let monster in gameState.monsters) {
-                    const monsterData = gameState.monsters[monster];
-                    sourceProduction += monsterData.count * monsterData.sourceEfficiency;
-                    miasmaProduction += monsterData.count * monsterData.miasmaEfficiency;
+                for (const [monsterType, monster] of Object.entries(gameState.monsters)) {
+                    if (monster.count > 0) {
+                        // 基本生産量
+                        let monsterSourceProduction = monster.count * monster.sourceEfficiency;
+                        let monsterMiasmaProduction = monster.count * monster.miasmaEfficiency;
+
+                        // シナジーボーナスの適用（加算方式）
+                        const totalSourceBonus = 1 + synergyEffects.source + synergyEffects.all;
+                        const totalMiasmaBonus = 1 + synergyEffects.miasma + synergyEffects.all;
+
+                        monsterSourceProduction *= totalSourceBonus;
+                        monsterMiasmaProduction *= totalMiasmaBonus;
+
+                        sourceProduction += monsterSourceProduction;
+                        miasmaProduction += monsterMiasmaProduction;
+                    }
                 }
 
                 // アドベンチャラーからのフォロワー生産を計算
-                const currentTime = Date.now();
                 for (const adventurer of gameState.adventurers) {
-                    // アンロックされていて、狂気状態の時のみ生産
-                    if (gameState.unlockedContent.adventurers.has(adventurer.name) && adventurer.isMad) {
-                        const baseProduction = adventurer.followerProduction * Math.pow(1.1, adventurer.level - 1);
-                        followerProduction += baseProduction;
+                    if (gameState.unlockedContent.adventurers.has(adventurer.name)) {
+                        // クールダウン中かつ狂気状態の時のみ生産
+                        const currentTime = Date.now();
+                        const isOnCooldown = currentTime < adventurer.cooldownEndTime;
+
+                        if (adventurer.isMad && isOnCooldown) {
+                            // レベルボーナスを加算方式で計算
+                            const levelBonus = 1 + (adventurer.level - 1) * 0.1; // 10%ずつ加算
+                            followerProduction += adventurer.followerProduction * levelBonus; // followerProductionを使用
+                        }
                     }
+                }
+
+                // グローバルボーナスの計算（加算方式）
+                let globalBonus = 1;
+
+                // Cosmic Alignment ボーナス
+                if (gameState.cosmicAlignmentBonus) {
+                    globalBonus += (gameState.cosmicAlignmentBonus - 1);
+                }
+
+                // Quantum Entanglement ボーナス
+                if (gameState.quantumEntanglementBonus) {
+                    globalBonus += gameState.quantumEntanglementBonus;
+                }
+
+                // Temporal Manipulation ボーナス
+                if (gameState.temporalManipulationBonus) {
+                    globalBonus += (gameState.temporalManipulationBonus - 1);
+                }
+
+                // Astral Projection ボーナス
+                if (gameState.astralProjectionRate) {
+                    globalBonus += gameState.astralProjectionRate;
                 }
 
                 // 契約効果の適用
                 if (gameState.pacts?.active) {
-                    const multiplier = gameState.pacts.commonMultiplier || 1;
-                    sourceProduction *= multiplier;
-                    miasmaProduction *= multiplier;
-                    followerProduction *= multiplier;
+                    const pactBonus = (gameState.pacts.commonMultiplier || 1) - 1;
+                    globalBonus += pactBonus;
                 }
 
-                // Cultosボーナスを適用
-                const cultosBonus = calculateCultosBonus();
-                sourceProduction *= cultosBonus;
-                miasmaProduction *= cultosBonus;
-                followerProduction *= cultosBonus;
+                // Cultosボーナスの計算
+                const cultosBonus = calculateCultosBonus() - 1;
+                globalBonus += cultosBonus;
 
-                // 生産ペナルティの適用
+                // 生産ペナルティの計算
                 const productionPenalty = calculateProductionPenalty();
-                sourceProduction *= productionPenalty;
-                miasmaProduction *= productionPenalty;
-                followerProduction *= productionPenalty;
+                globalBonus *= productionPenalty;
 
+                // 最終的な生産量の計算
+                sourceProduction *= globalBonus;
+                miasmaProduction *= globalBonus;
+                followerProduction *= globalBonus;
+
+                // 小数点以下を適切に処理
                 return {
-                    sourceProduction,
-                    miasmaProduction,
-                    followerProduction,
-                    baseFollowerProduction: followerProduction
+                    sourceProduction: Math.max(0, sourceProduction),
+                    miasmaProduction: Math.max(0, miasmaProduction),
+                    followerProduction: Math.max(0, followerProduction),
+                    baseFollowerProduction: followerProduction / globalBonus // ペナルティ適用前の基本生産量
                 };
             }
 
@@ -8504,7 +8560,7 @@ ${frame.bottom}
                 Minimum Required: ${formatNumber(minimumFollowers)}
                 ${gameState.followers < minimumFollowers ?
                             `<br><span class="penalty-warning">
-                        Production reduced to 10%<br>
+                        Production reduced to 33%<br>
                         Base production: ${formatNumber(baseProduction.sourceProduction)}/s<br>
                         Current production: ${formatNumber(finalProduction.sourceProduction)}/s
                     </span>` :
@@ -8536,20 +8592,20 @@ ${frame.bottom}
                 gameState.cultos += cultosRate * deltaTime;
 
                 // followerAccumulatorの初期化を確実に行う
-    if (typeof gameState.followerAccumulator !== 'number') {
-        gameState.followerAccumulator = 0;
-    }
+                if (typeof gameState.followerAccumulator !== 'number') {
+                    gameState.followerAccumulator = 0;
+                }
 
                 // フォロワーの累積処理
-    if (production.followerProduction > 0) {
-        gameState.followerAccumulator += production.followerProduction * deltaTime * baseMultiplier;
+                if (production.followerProduction > 0) {
+                    gameState.followerAccumulator += production.followerProduction * deltaTime * baseMultiplier;
 
-        if (gameState.followerAccumulator >= 1) {
-            const newFollowers = Math.floor(gameState.followerAccumulator);
-            gameState.followers += newFollowers;
-            gameState.followerAccumulator -= newFollowers;
-        }
-    }
+                    if (gameState.followerAccumulator >= 1) {
+                        const newFollowers = Math.floor(gameState.followerAccumulator);
+                        gameState.followers += newFollowers;
+                        gameState.followerAccumulator -= newFollowers;
+                    }
+                }
 
                 // 最小フォロワー数の保証（契約効果）
                 updatePactEffects();
@@ -8636,6 +8692,50 @@ ${frame.bottom}
                 detailsDiv.innerHTML = detailsHTML;
             }
 
+            function calculateMonsterEfficiency(monsterType) {
+                const monster = gameState.monsters[monsterType];
+                let sourceEfficiency = monster.sourceEfficiency;
+                let miasmaEfficiency = monster.miasmaEfficiency;
+
+                // Apply global multipliers
+                const globalMultiplier = (gameState.pacts?.commonMultiplier || 1);
+
+                // Apply Cosmic Alignment bonus if active
+                if (gameState.cosmicAlignmentBonus) {
+                    sourceEfficiency *= gameState.cosmicAlignmentBonus;
+                    miasmaEfficiency *= gameState.cosmicAlignmentBonus;
+                }
+
+                // Apply Quantum Entanglement bonus if active
+                if (gameState.quantumEntanglementBonus) {
+                    sourceEfficiency *= (1 + gameState.quantumEntanglementBonus);
+                    miasmaEfficiency *= (1 + gameState.quantumEntanglementBonus);
+                }
+
+                // Apply Temporal Manipulation bonus if active
+                if (gameState.temporalManipulationBonus) {
+                    sourceEfficiency *= gameState.temporalManipulationBonus;
+                    miasmaEfficiency *= gameState.temporalManipulationBonus;
+                }
+
+                // Apply Eldritch Evolution bonus if active
+                if (gameState.eldritchEvolutionRate && monster.evolutionTime) {
+                    const evolutionBonus = 1 + (gameState.eldritchEvolutionRate *
+                        Math.floor((Date.now() - monster.evolutionTime) / 60000));
+                    sourceEfficiency *= evolutionBonus;
+                    miasmaEfficiency *= evolutionBonus;
+                }
+
+                // Apply global multiplier from pacts
+                sourceEfficiency *= globalMultiplier;
+                miasmaEfficiency *= globalMultiplier;
+
+                return {
+                    sourceEfficiency,
+                    miasmaEfficiency
+                };
+            }
+
             function updateMonsterGrid() {
                 const grid = document.getElementById('monsterGrid');
                 if (!grid) {
@@ -8705,23 +8805,25 @@ ${frame.bottom}
                         progressBar.style.display = (!isUnlocked || details.classList.contains('expanded')) ? 'none' : 'block';
                     }
 
-                    // アンロック条件の表示
                     const unlockReqElement = card.querySelector('.unlock-requirement');
                     if (unlockReqElement) {
                         if (!isUnlocked) {
                             const unlockDesc = getUnlockDescription('monsters', monster);
-                            unlockReqElement.textContent = unlockDesc;
+                            unlockReqElement.textContent = `Unlock Requirement: ${unlockDesc}`;
                             unlockReqElement.style.display = 'block';
+                            unlockReqElement.classList.add('unlock-requirement-text');
                         } else {
                             unlockReqElement.style.display = 'none';
+                            unlockReqElement.classList.remove('unlock-requirement-text');
                         }
                     }
 
+                    const finalEfficiencies = calculateMonsterEfficiency(monster);
                     const count = Math.floor(monsterData.count || 0);
                     const sourceEfficiency = monsterData.sourceEfficiency || 0;
                     const miasmaEfficiency = monsterData.miasmaEfficiency || 0;
-                    const sourceProduction = count * sourceEfficiency;
-                    const miasmaProduction = count * miasmaEfficiency;
+                    const sourceProduction = count * finalEfficiencies.sourceEfficiency;
+                    const miasmaProduction = count * finalEfficiencies.miasmaEfficiency;
                     const nextCost = getCost(monster);
                     const followerCost = Math.floor(monsterData.baseFollowerCost * Math.pow(monsterData.followerCostGrowth, count));
                     const sourceDifference = nextCost - sourceCount;
@@ -8747,8 +8849,8 @@ ${frame.bottom}
 
                     // 各要素の更新
                     updateElementText(card, '.monster-count', formatNumber(count, 0));
-                    updateElementText(card, '.monster-source-efficiency', formatNumber(sourceEfficiency, 1));
-                    updateElementText(card, '.monster-miasma-efficiency', formatNumber(miasmaEfficiency, 1));
+                    updateElementText(card, '.monster-source-efficiency', formatNumber(finalEfficiencies.sourceEfficiency, 1));
+                    updateElementText(card, '.monster-miasma-efficiency', formatNumber(finalEfficiencies.miasmaEfficiency, 1));
                     updateElementText(card, '.monster-source-production', formatNumber(sourceProduction, 1));
                     updateElementText(card, '.monster-miasma-production', formatNumber(miasmaProduction, 1));
                     updateElementText(card, '.monster-next-cost', formatNumber(nextCost, 0));
@@ -8768,14 +8870,15 @@ ${frame.bottom}
                         synergyElement.textContent = synergyText;
                     }
 
-                    // 特殊能力の更新
                     const specialAbilityInfo = monsterData.specialAbility;
                     const specialAbilityElement = card.querySelector('.monster-special-ability');
-                    if (specialAbilityInfo && specialAbilityElement) {
-                        const effect = specialAbilityInfo.effect;
-                        let description = `Every ${specialAbilityInfo.trigger}: `;
-                        description += describeSpecialAbility(effect);
-                        specialAbilityElement.textContent = description;
+                    if (specialAbilityElement) {
+                        if (specialAbilityInfo) {
+                            const description = describeSpecialAbility(specialAbilityInfo);
+                            specialAbilityElement.textContent = description;
+                        } else {
+                            specialAbilityElement.textContent = 'None';
+                        }
                     }
 
                     // サモンボタンの更新
@@ -8785,6 +8888,37 @@ ${frame.bottom}
                         summonBtn.disabled = !canAfford;
                         summonBtn.classList.toggle('button-enabled', canAfford);
                         summonBtn.classList.toggle('button-disabled', !canAfford);
+                    }
+                }
+            }
+
+            function updateMonsterStates() {
+                for (const monsterType in gameState.monsters) {
+                    const monster = gameState.monsters[monsterType];
+                    if (monster.count > 0) {
+                        // 特殊能力の発動条件チェック
+                        const triggerCount = Math.floor(monster.count / monster.specialAbility.trigger);
+                        if (triggerCount > 0) {
+                            if (monster.specialAbility.effect.type === 'madnessChance') {
+                                // madnessChanceの更新をログに記録
+                                debug(`${monsterType}: Applying madness chance modifier: ${monster.specialAbility.effect.value * triggerCount}`);
+                            }
+                        }
+                    }
+                }
+            }
+
+            function checkSpecialAbilityEffects() {
+                for (const monsterType in gameState.monsters) {
+                    const monster = gameState.monsters[monsterType];
+                    if (monster.count > 0 && monster.specialAbility) {
+                        const triggerCount = Math.floor(monster.count / monster.specialAbility.trigger);
+                        debug(`${monsterType} special ability status:
+                Count: ${monster.count}
+                Triggers: ${triggerCount}
+                Effect Type: ${monster.specialAbility.effect.type}
+                Effect Value: ${monster.specialAbility.effect.value}
+                Current Multiplier: ${gameState.madnessChanceMultiplier || 1}`);
                     }
                 }
             }
@@ -8899,6 +9033,23 @@ ${frame.bottom}
                             tooltipText = `Must maintain minimum follower count (${formatNumber(gameState.minimumFollowers)})`;
                         }
                         summonBtn.title = tooltipText;
+                    }
+
+                    // 狂気チャンスの表示を更新
+                    const madnessChanceElement = card.querySelector('.madness-chance');
+                    if (madnessChanceElement) {
+                        const chance = calculateMadnessChance(adventurer);
+                        madnessChanceElement.textContent = `${(chance * 100).toFixed(1)}%`;
+
+                        // 補正が適用されている場合は視覚的なフィードバックを追加
+                        const hasBonus = chance > adventurer.madnessChance;
+                        madnessChanceElement.classList.toggle('has-bonus', hasBonus);
+
+                        if (hasBonus) {
+                            const baseChance = adventurer.madnessChance * 100;
+                            const totalChance = chance * 100;
+                            madnessChanceElement.title = `Base: ${baseChance.toFixed(1)}% + Bonus: ${(totalChance - baseChance).toFixed(1)}%`;
+                        }
                     }
 
                     // アンロック状態の更新
@@ -9020,7 +9171,7 @@ ${frame.bottom}
             }
 
             function describeSpecialAbility(ability) {
-                if (!ability) return 'No special ability';
+                if (!ability) return 'None';
 
                 const { trigger, effect } = ability;
                 if (!effect) return 'Invalid special ability';
@@ -9163,31 +9314,55 @@ ${frame.bottom}
                 }
             }
 
-            // ヘルパー関数
-            // ボタン表示/非表示の関数も修正
             function hideManualRecruitButtons() {
-                const sourceBtn = document.getElementById('collectSource');
-                const followerBtn = document.getElementById('recruitFollowerBtn');
-                if (sourceBtn) {
-                    sourceBtn.style.display = 'none';
-                    sourceBtn.classList.add('sealed-by-pact');
-                }
-                if (followerBtn) {
-                    followerBtn.style.display = 'none';
-                    followerBtn.classList.add('sealed-by-pact');
+                const elements = [
+                    document.getElementById('recruitFollowerBtn'),
+                    document.getElementById('collectSource'),
+                    ...document.querySelectorAll('.recruit-follower-btn')
+                ];
+
+                elements.forEach(element => {
+                    if (element) {
+                        element.style.display = 'none';
+                        element.disabled = true;
+                        element.classList.add('sealed-by-pact');
+                    }
+                });
+
+                // リクルートボタンのコンテナも非表示に
+                const recruitContainer = document.querySelector('.recruit-container');
+                if (recruitContainer) {
+                    recruitContainer.style.display = 'none';
+                    recruitContainer.classList.add('sealed-by-pact');
                 }
             }
 
             function showManualRecruitButtons() {
-                const sourceBtn = document.getElementById('collectSource');
-                const followerBtn = document.getElementById('recruitFollowerBtn');
-                if (sourceBtn) {
-                    sourceBtn.style.display = 'block';
-                    sourceBtn.classList.remove('sealed-by-pact');
-                }
-                if (followerBtn) {
-                    followerBtn.style.display = 'block';
-                    followerBtn.classList.remove('sealed-by-pact');
+                try {
+                    // 全てのリクルートボタンを取得
+                    const sourceBtn = document.getElementById('collectSource');
+                    const followerBtn = document.getElementById('recruitFollowerBtn');
+                    const recruitButtons = document.querySelectorAll('.recruit-follower-btn');
+
+                    // sealed-by-pactクラスが付いているボタンのみ表示を戻す
+                    [sourceBtn, followerBtn, ...recruitButtons].forEach(btn => {
+                        if (btn && btn.classList.contains('sealed-by-pact')) {
+                            btn.style.display = 'block';
+                            btn.classList.remove('sealed-by-pact');
+                            btn.disabled = false;
+                        }
+                    });
+
+                    // リクルートボタンのコンテナも表示を戻す
+                    const recruitContainer = document.querySelector('.recruit-container.sealed-by-pact');
+                    if (recruitContainer) {
+                        recruitContainer.style.display = 'block';
+                        recruitContainer.classList.remove('sealed-by-pact');
+                    }
+
+                    //console.log("Manual recruit buttons shown");
+                } catch (error) {
+                    console.error("Error showing manual recruit buttons:", error);
                 }
             }
 
@@ -9252,6 +9427,61 @@ ${frame.bottom}
                 };
             }
 
+            function applyPactEffects(pact) {
+                pact.effects.forEach(effect => {
+                    switch (effect.type) {
+                        case "minimumFollowers":
+                            gameState.minimumFollowers = Math.max(gameState.minimumFollowers || 0, effect.value);
+                            gameState.followers = Math.max(gameState.followers || 0, effect.value);
+                            break;
+                        case "followerEfficiency":
+                            gameState.followerEfficiency = (gameState.followerEfficiency || 0.1) * (1 + effect.value);
+                            break;
+                        case "globalMultiplier":
+                            gameState.pacts.commonMultiplier *= (1 + effect.value);
+                            break;
+                        case "tickSpeed":
+                            gameState.pacts.tickSpeedMultiplier *= (1 + effect.value);
+                            break;
+                        case "sealManualRecruits":
+                            hideManualRecruitButtons();
+                            break;
+                    }
+                });
+            }
+
+            // PACTに特有のUI更新を行う関数
+            function updatePactSpecificUI() {
+                // 手動リクルートボタンの状態を更新
+                if (gameState.pacts.active.includes('1')) {
+                    hideManualRecruitButtons();
+                } else {
+                    showManualRecruitButtons();
+                }
+
+                // フォロワーの外観を更新
+                updateFollowerAppearance();
+
+                // アップグレードの順序を確実に維持
+                const upgradeGrid = document.getElementById('upgradeGrid');
+                if (upgradeGrid) {
+                    upgradeGrid.innerHTML = '';
+                    updateUpgradeGrid();
+                }
+
+                // エンブレムを更新
+                updateCultosMiner();
+
+                // tick speed表示を更新
+                updateTimeAccelerationDisplay();
+
+                // 統計情報を更新
+                if (document.getElementById('statisticsModal')?.classList.contains('active')) {
+                    updateStatistics();
+                }
+            }
+
+
             // PACT適用時の処理を改善
             function applyPact(pactId) {
                 const pact = PACTS[pactId];
@@ -9300,6 +9530,7 @@ ${frame.bottom}
 
                 // UI更新を実行
                 updateFollowerAppearance();
+                rebuildUI();
 
                 // 視覚効果を追加
                 addPactVisualEffects();
@@ -9371,115 +9602,141 @@ ${frame.bottom}
                 }
             }
 
-            // 契約受諾共通関数
-            // 契約受諾時の処理を簡略化して確実に実行されるように修正
+            // acceptPact関数を完全に書き直し
             function acceptPact(pactId) {
                 try {
-                    // 永続データを保存
-                    const persistentState = {
+                    console.log("Accepting pact:", pactId);
+
+                    // 契約モーダルを閉じる
+                    closePactModal();
+
+                    // 現在の重要なデータを保存
+                    const persistentData = {
                         statistics: { ...gameState.statistics },
                         pacts: {
-                            active: [...gameState.pacts.active, pactId.toString()],
-                            commonMultiplier: gameState.pacts.commonMultiplier || 1,
-                            tickSpeedMultiplier: gameState.pacts.tickSpeedMultiplier || 1,
+                            active: [...(gameState.pacts?.active || []), pactId.toString()],
+                            commonMultiplier: (gameState.pacts?.commonMultiplier || 1) * 1.25, // 25%増加
+                            tickSpeedMultiplier: (gameState.pacts?.tickSpeedMultiplier || 1) * 1.25,
                             showingPactModal: false
                         },
                         cultos: gameState.cultos || 0,
-                        cultosRate: gameState.cultosRate || 0
+                        cultosRate: gameState.cultosRate || 0,
+                        minimumFollowers: 0
                     };
 
-                    // ゲーム状態をリセット
+                    // ゲーム状態を初期状態にリセット
                     gameState = JSON.parse(JSON.stringify(initialGameState));
 
                     // 永続データを復元
-                    gameState.statistics = persistentState.statistics;
-                    gameState.pacts = persistentState.pacts;
-                    gameState.cultos = persistentState.cultos;
-                    gameState.cultosRate = persistentState.cultosRate;
+                    gameState.statistics = persistentData.statistics;
+                    gameState.pacts = persistentData.pacts;
+                    gameState.cultos = persistentData.cultos;
+                    gameState.cultosRate = persistentData.cultosRate;
 
-                    // 基本的なアンロック状態を設定
+                    // 初期アンロック状態を設定
                     gameState.unlockedContent = {
-                        adventurers: new Set(['Novice Explorer']),
                         monsters: new Set(['Shoggoth']),
+                        adventurers: new Set(['Novice Explorer']),
                         upgrades: new Set(['Ritual Knowledge']),
                         resources: new Set()
                     };
 
-                    // 契約効果を直接適用
+                    // PACT効果の即時適用
                     const pact = PACTS[pactId];
                     if (pact) {
-                        // フォロワーの外観を即座に更新
-                        const followerArt = document.getElementById('followerAsciiArt');
-                        if (followerArt && pact.followerAsciiArt) {
-                            // まずアニメーション用のクラスを追加
-                            followerArt.classList.add('transforming');
-
-                            // 即座に新しいアートを設定
-                            followerArt.innerHTML = pact.followerAsciiArt;
-
-                            // ツールチップを設定
-                            if (pact.tooltipText) {
-                                followerArt.setAttribute('data-tooltip', pact.tooltipText);
-                            }
-
-                            // アニメーション完了後にクラスを調整
-                            setTimeout(() => {
-                                followerArt.classList.remove('transforming');
-                                followerArt.classList.add('transformed');
-                            }, 1000);
-                        }
-
-                        // 契約効果を適用
-                        let minimumFollowers = 0;
-                        let efficiencyMultiplier = 1;
-
                         pact.effects.forEach(effect => {
                             switch (effect.type) {
                                 case "minimumFollowers":
-                                    minimumFollowers = Math.max(minimumFollowers, effect.value);
+                                    persistentData.minimumFollowers = Math.max(persistentData.minimumFollowers, effect.value);
+                                    gameState.followers = effect.value; // 最小値を直接設定
                                     break;
                                 case "followerEfficiency":
-                                    efficiencyMultiplier *= (1 + effect.value);
+                                    gameState.followerEfficiency *= (1 + effect.value);
                                     break;
-                                case "globalMultiplier":
-                                    gameState.pacts.commonMultiplier *= (1 + effect.value);
-                                    break;
-                                case "tickSpeed":
-                                    gameState.pacts.tickSpeedMultiplier *= (1 + effect.value);
+                                case "sealManualRecruits":
+                                    // 手動リクルートを即座に無効化
+                                    const recruitBtn = document.getElementById('recruitFollowerBtn');
+                                    if (recruitBtn) {
+                                        recruitBtn.style.display = 'none';
+                                        recruitBtn.disabled = true;
+                                        recruitBtn.classList.add('sealed-by-pact');
+                                    }
+                                    const collectSourceBtn = document.getElementById('collectSource');
+                                    if (collectSourceBtn) {
+                                        collectSourceBtn.style.display = 'none';
+                                        collectSourceBtn.disabled = true;
+                                        collectSourceBtn.classList.add('sealed-by-pact');
+                                    }
                                     break;
                             }
                         });
-
-                        // フォロワー関連の値を設定
-                        gameState.minimumFollowers = minimumFollowers;
-                        gameState.followers = Math.max(minimumFollowers);
-                        gameState.followerEfficiency = 0.1 * efficiencyMultiplier;
                     }
 
-                    // UI更新
-                    if (gameState.pacts.active.includes('1')) {
-                        hideManualRecruitButtons();
+                    // フォロワーの外観を即座に更新
+                    const followerArt = document.getElementById('followerAsciiArt');
+                    if (followerArt && pact.followerAsciiArt) {
+                        followerArt.innerHTML = pact.followerAsciiArt;
+                        if (pact.tooltipText) {
+                            followerArt.setAttribute('data-tooltip', pact.tooltipText);
+                        }
+                        followerArt.classList.add('transformed');
                     }
 
-                    // 表示を更新
-                    updateAllDisplays();
+                    // DOMの完全な再構築
+                    resetDOM();
+                    rebuildUI();
+
+                    // 追加のUI更新
+                    updateResourceDisplay();
+                    updateCultosMiner();
                     updateTimeAccelerationDisplay();
+                    updateUpgradeSymbols();
+                    updateButtonStates();
 
-                    // モーダルを閉じてゲームを再開
-                    closePactModal();
+                    // この時点でボタンの状態を強制的に更新
+                    if (pactId === '1') {
+                        const allRecruitButtons = document.querySelectorAll('.recruit-follower-btn, #recruitFollowerBtn');
+                        allRecruitButtons.forEach(btn => {
+                            btn.style.display = 'none';
+                            btn.disabled = true;
+                            btn.classList.add('sealed-by-pact');
+                        });
+                    }
+
+                    // ゲームを再開
                     gamePaused = false;
 
                     // 状態を保存
                     saveGame();
 
-                    // ログにメッセージを追加
                     logAction(`The ${PACTS[pactId].name} has been sealed - Progress has been reset`);
+
+                    // 即座にアップグレードグリッドを更新
+                    const upgradeGrid = document.getElementById('upgradeGrid');
+                    if (upgradeGrid) {
+                        upgradeGrid.innerHTML = '';
+                        updateUpgradeGrid();
+                    }
 
                     return true;
 
                 } catch (error) {
                     console.error("Error accepting pact:", error);
                     return false;
+                }
+            }
+
+            function closePactModal() {
+                try {
+                    const modal = document.querySelector('.pact-modal');
+                    if (modal) {
+                        modal.remove();
+                    }
+                    gameState.pacts.showingPactModal = false;
+                    gamePaused = false;
+                    console.log("Modal closed successfully");
+                } catch (error) {
+                    console.error("Error closing modal:", error);
                 }
             }
 
@@ -9534,15 +9791,6 @@ ${frame.bottom}
                 gamePaused = false;
             }
 
-            // モーダルを閉じる共通関数
-            function closePactModal() {
-                const modal = document.querySelector('.pact-modal');
-                if (modal) {
-                    modal.remove();
-                }
-                gameState.pacts.showingPactModal = false;
-                gamePaused = false; // モーダルが閉じたらゲームを再開
-            }
             // ゲームループ内での契約効果の適用
             function updatePactEffects() {
                 if (!gameState.pacts?.active) return;
@@ -9666,65 +9914,68 @@ ${frame.bottom}
 
             function saveGame() {
                 try {
-                    // Set型のデータを配列に変換
+                    // データ整合性の確認
+                    if (!Array.isArray(gameState.upgrades)) {
+                        gameState.upgrades = [];
+                    }
+
+                    // アップグレードの重複排除と検証
+                    gameState.upgrades = [...new Set(gameState.upgrades)].filter(
+                        upgrade => upgradeDefinitions.hasOwnProperty(upgrade)
+                    );
+
+                    // アンロック状態の確認
                     if (!gameState.unlockedContent) {
                         gameState.unlockedContent = {
-                            monsters: new Set(['Shoggoth']), // 初期状態で解放されているモンスター
-                            adventurers: new Set(['Novice Explorer']), // 初期状態で解放されているアドベンチャラー
-                            upgrades: new Set(['Ritual Knowledge']), // 初期状態で解放されているアップグレード
+                            adventurers: new Set(['Novice Explorer']),
+                            monsters: new Set(['Shoggoth']),
+                            upgrades: new Set(['Ritual Knowledge']),
                             resources: new Set()
                         };
                     }
 
-                    // セーブデータの準備
-                    const saveData = {
-                        version: gameVersion,
-                        ...gameState,
-                        unlockedContent: {
-                            adventurers: Array.from(gameState.unlockedContent.adventurers),
-                            monsters: Array.from(gameState.unlockedContent.monsters),
-                            upgrades: Array.from(gameState.unlockedContent.upgrades)
-                        }
-                    };
-
+                    // 保存用のステート作成
                     const saveState = {
                         ...JSON.parse(JSON.stringify({
                             ...gameState,
-                            unlockedContent: null // 一時的にunlockedContentを除外
+                            unlockedContent: null // 一時的に除外
                         })),
-                        // Set型のデータを配列として保存
+                        // アンロック状態を配列として保存
                         unlockedContent: {
                             monsters: Array.from(gameState.unlockedContent.monsters || new Set()),
                             adventurers: Array.from(gameState.unlockedContent.adventurers || new Set()),
                             upgrades: Array.from(gameState.unlockedContent.upgrades || new Set()),
                             resources: Array.from(gameState.unlockedContent.resources || new Set())
-                        }
+                        },
+                        // upgradeOrderを保存
+                        upgradeOrder: upgradeOrder,
+                        // バージョン情報
+                        version: gameVersion
                     };
 
-                    // 永続データの準備
-                    const persistentData = {
-                        pacts: gameState.pacts,
-                        followers: gameState.followers,
-                        followerEfficiency: gameState.followerEfficiency,
-                        unlockedContent: {
-                            adventurers: Array.from(gameState.unlockedContent.adventurers),
-                            monsters: Array.from(gameState.unlockedContent.monsters),
-                            upgrades: Array.from(gameState.unlockedContent.upgrades),
-                            resources: Array.from(gameState.unlockedContent.resources)
-                        },
-                        // Cultos関連の永続データを明示的に保存
-                        cultosPersistent: {
-                            cultos: gameState.cultos,
-                            cultosRate: gameState.cultosRate,
-                            hasCultosMiner: gameState.unlockedContent.resources.has('cultos')
-                        }
-                    };
+                    // PACTの状態を確実に保存
+                    if (saveState.pacts?.active?.includes('1')) {
+                        saveState.pacts.sealedRecruits = true;
+                    }
 
                     // セーブデータを保存
                     localStorage.setItem('cultistComplexSave', JSON.stringify(saveState));
+
                     console.log('[DEBUG] Game saved successfully');
+
+                    // バックアップの作成（オプション）
+                    try {
+                        localStorage.setItem('cultistComplexSave_backup', JSON.stringify(saveState));
+                    } catch (backupError) {
+                        console.warn('Failed to create backup:', backupError);
+                    }
+
+                    return true;
+
                 } catch (error) {
                     console.error('Error saving game:', error);
+                    logAction("Failed to save game: " + error.message);
+                    return false;
                 }
             }
 
@@ -9752,89 +10003,56 @@ ${frame.bottom}
                 };
             }
 
-            // メインのscriptタグ内の既存のloadGame関数を以下のように修正
             function loadGame() {
                 try {
                     const savedGame = localStorage.getItem('cultistComplexSave');
-                    if (savedGame) {
-                        const loadedState = JSON.parse(savedGame);
+                    if (!savedGame) {
+                        logAction("No saved game found, starting new game");
+                        return false;
+                    }
 
-                        // unlockedContentを適切に復元
-                        loadedState.unlockedContent = loadUnlockedContent(loadedState.unlockedContent);
+                    const loadedState = JSON.parse(savedGame);
 
-                        // ゲームステートを更新
-                        gameState = loadedState;
+        // 基本値にリセット（契約効果を適用する前の初期値）
+        const baseEfficiency = loadedState.followerEfficiency || 0.1; // 保存された効率値を使用
+        const baseMultiplier = 1;
 
-                        // バージョンチェック
-                        if (loadedState.version !== gameVersion) {
-                            console.warn(`Save version (${loadedState.version}) differs from current game version (${gameVersion})`);
+                    // gameStateを更新する前に効率値をリセット
+                    gameState = {
+                        ...loadedState,
+                        followerEfficiency: baseEfficiency,
+                        pacts: {
+                            ...loadedState.pacts,
+                            commonMultiplier: baseMultiplier,
+                            tickSpeedMultiplier: baseMultiplier
                         }
+                    };
 
-                        // 保存されているフォロワー数を一時保存
-                        const savedFollowers = loadedState.followers || 0;
+                    // unlockedContentの復元
+                    gameState.unlockedContent = {
+                        monsters: new Set(loadedState.unlockedContent.monsters || ['Shoggoth']),
+                        adventurers: new Set(loadedState.unlockedContent.adventurers || ['Novice Explorer']),
+                        upgrades: new Set(loadedState.unlockedContent.upgrades || ['Ritual Knowledge']),
+                        resources: new Set(loadedState.unlockedContent.resources || [])
+                    };
 
-                        // すべての効果倍率を初期値にリセット
-                        gameState.followerEfficiency = 0.1; // 基本値
-                        gameState.cosmicAlignmentBonus = 1;
-                        gameState.quantumEntanglementBonus = 0;
-                        gameState.temporalManipulationBonus = 1;
-                        gameState.eldritchEvolutionRate = 0;
-                        gameState.astralProjectionRate = 0;
+                    // 保存されているフォロワー数を一時保存
+                    const savedFollowers = loadedState.followers || 0;
 
-                        // PACTシステムを初期値にリセット
-                        gameState.pacts = {
-                            active: loadedState.pacts?.active || [],
-                            commonMultiplier: 1,
-                            tickSpeedMultiplier: 1,
-                            showingPactModal: false
-                        };
-
-                        // 契約による最小フォロワー数を計算
-                        let minimumFollowers = 0;
-                        if (gameState.pacts?.active) {
-                            gameState.pacts.active.forEach(pactId => {
-                                const pact = PACTS[pactId];
-                                if (pact) {
-                                    pact.effects.forEach(effect => {
-                                        if (effect.type === "minimumFollowers") {
-                                            minimumFollowers = Math.max(minimumFollowers, effect.value);
-                                        }
-                                    });
-                                }
-                            });
-                        }
-
-                        // フォロワー数を設定（保存された数と最小値の大きい方を維持）
-                        gameState.followers = Math.max(savedFollowers, minimumFollowers);
-
-                        // ベースとなるモンスターの効率値を保存
-                        for (const monsterType in gameState.monsters) {
-                            if (gameState.monsters[monsterType]) {
-                                gameState.monsters[monsterType].sourceEfficiency =
-                                    initialGameState.monsters[monsterType].sourceEfficiency;
-                                gameState.monsters[monsterType].miasmaEfficiency =
-                                    initialGameState.monsters[monsterType].miasmaEfficiency;
-                            }
-                        }
-
-                        // すべての効果を順番に再適用
-
-                        // 1. アップグレードの効果を適用
-                        if (Array.isArray(gameState.upgrades)) {
-                            gameState.upgrades.forEach(upgrade => {
-                                applyUpgrade(upgrade);
-                            });
-                        }
-
-                        // 2. PACTの効果を適用
-                        if (gameState.pacts.active.length > 0) {
-                            gameState.pacts.active.forEach(pactId => {
+                    // PACTの状態を確認し、必要に応じてボタンを非表示に
+                    if (gameState.pacts?.active?.includes('1')) {
+                        hideManualRecruitButtons();
+                    }
+                    // PACTの効果を再適用
+                    if (gameState.pacts?.active?.length > 0) {
+                        gameState.pacts.active.forEach(pactId => {
+                            if (PACTS[pactId]) {
                                 const pact = PACTS[pactId];
                                 if (pact) {
                                     pact.effects.forEach(effect => {
                                         switch (effect.type) {
                                             case "minimumFollowers":
-                                                gameState.minimumFollowers = effect.value;
+                                                gameState.minimumFollowers = Math.max(gameState.minimumFollowers || 0, effect.value);
                                                 break;
                                             case "followerEfficiency":
                                                 gameState.followerEfficiency *= (1 + effect.value);
@@ -9845,71 +10063,56 @@ ${frame.bottom}
                                             case "tickSpeed":
                                                 gameState.pacts.tickSpeedMultiplier *= (1 + effect.value);
                                                 break;
-                                            case "sealManualRecruits":
-                                                hideManualRecruitButtons();
-                                                break;
                                         }
                                     });
                                 }
+                            }
+                        });
+                    }
+
+                    // フォロワー数を更新（最小値を考慮）
+                    gameState.followers = Math.max(savedFollowers, gameState.minimumFollowers || 0);
+
+                    // オフラインプログレスの処理
+                    const lastUpdateTime = gameState.statistics?.lastUpdate || Date.now();
+                    const currentTime = Date.now();
+                    const offlineTime = currentTime - lastUpdateTime;
+
+                    // 最小オフライン時間（1分）を超えている場合のみ処理
+                    if (offlineTime >= 60 * 1000) {
+                        const progress = processOfflineProgress(offlineTime);
+
+                        // DOMが読み込まれているか確認
+                        if (document.readyState === 'complete') {
+                            showOfflineProgressModal(progress);
+                        } else {
+                            window.addEventListener('load', () => {
+                                showOfflineProgressModal(progress);
                             });
                         }
-
-                        // 3. モンスターの特殊能力を適用
-                        applySpecialAbilities();
-
-                        // 4. シナジー効果を計算して適用
-                        const synergyEffects = calculateSynergyEffects();
-                        for (const [monsterType, effect] of Object.entries(synergyEffects)) {
-                            if (gameState.monsters[monsterType]) {
-                                const monster = gameState.monsters[monsterType];
-                                if (effect.type === 'all' || effect.type === 'source') {
-                                    monster.sourceEfficiency *= (1 + effect.effect);
-                                }
-                                if (effect.type === 'all' || effect.type === 'miasma') {
-                                    monster.miasmaEfficiency *= (1 + effect.effect);
-                                }
-                            }
-                        }
-
-                        // その他の必要な初期化
-                        lastFrameTime = Date.now();
-                        validateGameState();
-                        updateAllDisplays();
-
-                        // オフラインプログレスの処理
-                        const lastUpdateTime = gameState.statistics?.lastUpdate;
-                        if (lastUpdateTime) {
-                            const offlineTime = Date.now() - lastUpdateTime;
-                            if (offlineTime >= 60000) { // 1分以上経過している場合
-                                const progress = processOfflineProgress(offlineTime);
-
-                                // DOMが完全に読み込まれてからモーダルを表示
-                                if (document.readyState === 'complete') {
-                                    showOfflineProgressModal(progress);
-                                } else {
-                                    window.addEventListener('load', () => {
-                                        showOfflineProgressModal(progress);
-                                    });
-                                }
-                            }
-                        }
-
-                        // 最終更新時刻を更新
-                        if (gameState.statistics) {
-                            gameState.statistics.lastUpdate = Date.now();
-                        }
-
-
-                        // ゲーム状態を保存
-                        saveGame();
-                        logAction("Game loaded successfully");
-                        return true;
                     }
-                    return false;
+
+                    // 統計情報を更新
+                    if (gameState.statistics) {
+                        gameState.statistics.lastUpdate = Date.now();
+                    }
+
+                    // 表示を更新
+                    updateAllDisplays();
+                    updateTimeAccelerationDisplay();
+
+                    logAction("Game loaded successfully");
+                    return true;
 
                 } catch (error) {
                     console.error("Error loading game:", error);
-                    logAction("Error loading game: " + error.message);
+                    // エラー時は初期状態を設定
+                    gameState.unlockedContent = {
+                        monsters: new Set(['Shoggoth']),
+                        adventurers: new Set(['Novice Explorer']),
+                        upgrades: new Set(['Ritual Knowledge']),
+                        resources: new Set()
+                    };
                     return false;
                 }
             }
@@ -9926,7 +10129,7 @@ ${frame.bottom}
 
             function validateGameState() {
                 try {
-                    // unlockedContent の検証と修正
+                    // unlockedContentの検証と修正
                     if (!gameState.unlockedContent) {
                         gameState.unlockedContent = {
                             adventurers: new Set(['Novice Explorer']),
@@ -9973,7 +10176,6 @@ ${frame.bottom}
                             isNaN(gameState[prop]) ||
                             !isFinite(gameState[prop]) ||
                             gameState[prop] < config.min) {
-                            console.warn(`Invalid ${prop} value (${gameState[prop]}), resetting to default: ${config.default}`);
                             gameState[prop] = config.default;
                         }
                     }
@@ -10091,7 +10293,6 @@ ${frame.bottom}
                     }
 
                     return true;
-
                 } catch (error) {
                     console.error("Error in validateGameState:", error);
                     return false;
@@ -10141,15 +10342,15 @@ ${frame.bottom}
                 updateUpgradeSymbols();
             }
 
-            // updateAllDisplays関数を修正
             function updateAllDisplays() {
+                console.log('Updating all displays');
                 updateResourceDisplay();
+                updateUpgradeGrid();
                 updateMonsterCards();
-                updateUpgradeCards();
                 updateAdventurerCards();
                 updateGameDetails();
                 updateMadnessTable();
-                updateUnlockStatus(true); // skipDisplayUpdate = true
+                updateUnlockStatus(true);
                 updateProgressBars();
                 updateUpgradeSymbols();
                 updateCultosMiner();
@@ -10171,16 +10372,54 @@ ${frame.bottom}
                     const offlineSeconds = offlineTime / 1000;
                     const timeMultiplier = timeAcceleration * (gameState.pacts?.tickSpeedMultiplier || 1);
 
+                    // PACTの条件をチェック
+                    let shouldPauseProduction = false;
+                    if (!gameState.pacts.active.includes('1') && gameState.source >= 1e6 - 1) {
+                        shouldPauseProduction = true;
+                    } else if (gameState.pacts.active.includes('1') && !gameState.pacts.active.includes('2') &&
+                        gameState.source >= 1e28 - 1) {
+                        shouldPauseProduction = true;
+                    }
+
                     // 基本的な生産量を計算
                     const baseProduction = calculateResourceProduction();
-
-                    // オフライン中の総生産量を計算
                     const offlineProgress = {
-                        source: baseProduction.sourceProduction * offlineSeconds * timeMultiplier,
-                        miasma: baseProduction.miasmaProduction * offlineSeconds * timeMultiplier,
-                        followers: Math.floor(baseProduction.followerProduction * offlineSeconds * timeMultiplier),
+                        source: shouldPauseProduction ? 0 : baseProduction.sourceProduction * offlineSeconds * timeMultiplier,
+                        miasma: shouldPauseProduction ? 0 : baseProduction.miasmaProduction * offlineSeconds * timeMultiplier,
+                        followers: 0,
                         cultos: 0
                     };
+
+                    // アドベンチャラーの処理を修正
+                    if (gameState.adventurers) {
+                        gameState.adventurers.forEach((adventurer, index) => {
+                            const currentTime = Date.now();
+
+                            // クールダウン中だった場合の処理
+                            if (adventurer.cooldownEndTime > 0) {
+                                if (currentTime >= adventurer.cooldownEndTime) {
+                                    // クールダウンが終了している場合
+                                    adventurer.cooldownEndTime = 0;
+                                    if (adventurer.isMad) {
+                                        adventurer.isMad = false;
+                                        logAction(`${adventurer.name} has returned to sanity!`);
+                                    }
+                                }
+                            }
+
+                            // 狂気状態での生産計算
+                            if (adventurer.isMad) {
+                                const remainingCooldown = Math.max(0, adventurer.cooldownEndTime - currentTime);
+                                const activeTime = offlineTime - remainingCooldown;
+
+                                if (activeTime > 0) {
+                                    const followerProduction = calculateFollowerProduction(adventurer);
+                                    const productionPerSecond = followerProduction / (adventurer.baseCooldown / 1000);
+                                    offlineProgress.followers += productionPerSecond * (activeTime / 1000);
+                                }
+                            }
+                        });
+                    }
 
                     // Cultosの生産を処理
                     if (gameState.unlockedContent?.resources?.has('cultos')) {
@@ -10188,9 +10427,11 @@ ${frame.bottom}
                         offlineProgress.cultos = cultosRate * offlineSeconds * timeMultiplier;
                     }
 
-                    // リソースを更新
-                    gameState.source += offlineProgress.source;
-                    gameState.miasma += offlineProgress.miasma;
+                    // リソースを更新（PACTの条件を考慮）
+                    if (!shouldPauseProduction) {
+                        gameState.source += offlineProgress.source;
+                        gameState.miasma += offlineProgress.miasma;
+                    }
 
                     // フォロワー数を更新（契約の最小値を考慮）
                     let minimumFollowers = 0;
@@ -10224,13 +10465,13 @@ ${frame.bottom}
                         gameState.statistics.lastUpdate = Date.now();
                     }
 
-                    // 生産量を整形して返す
                     return {
                         timeAway: formatTime(Math.floor(offlineSeconds)),
                         source: formatNumber(offlineProgress.source),
                         miasma: formatNumber(offlineProgress.miasma),
                         followers: formatNumber(offlineProgress.followers),
-                        cultos: formatNumber(offlineProgress.cultos)
+                        cultos: formatNumber(offlineProgress.cultos),
+                        productionPaused: shouldPauseProduction
                     };
 
                 } catch (error) {
@@ -10240,7 +10481,8 @@ ${frame.bottom}
                         source: "0",
                         miasma: "0",
                         followers: "0",
-                        cultos: "0"
+                        cultos: "0",
+                        productionPaused: false
                     };
                 }
             }
@@ -10292,7 +10534,11 @@ ${frame.bottom}
             right: auto !important;
             bottom: auto !important;">
             <h2 style="color: #4CAF50 !important; margin-bottom: 15px !important; text-align: center !important;">Offline Progress</h2>
-            <p style="margin-bottom: 10px !important; text-align: center !important;">Welcome back! You were away for ${timeAway}</p>
+            <p style="margin-bottom: 10px !important; text-align: center !important;">Welcome back! You were away for ${progress.timeAway}</p>
+            ${progress.productionPaused ?
+                            `<p style="color: #ff9800; margin: 10px 0 !important; text-align: center !important;">
+                    Resource production is paused until you accept the pending PACT
+                </p>` : ''}
             <div class="progress-details" style="margin-bottom: 15px !important;">
                 <p style="margin: 5px 0 !important;">Source gained: ${progress.source}</p>
                 <p style="margin: 5px 0 !important;">Miasma gained: ${progress.miasma}</p>
@@ -10815,10 +11061,13 @@ ${frame.bottom}
                         recruitFollower();
                     } else if (target.matches('.summon-monster-btn')) {
                         summonMonster(target.dataset.monster);
-                    } else if (target.matches('.buy-upgrade-btn')) {
-                        buyUpgrade(target.dataset.upgrade);
                     } else if (target.matches('.madness-btn:not([disabled])')) {
                         attemptMadness(parseInt(target.dataset.index));
+                    } else if (target.matches('.buy-upgrade-btn')) {
+                        const upgradeId = target.dataset.upgrade;
+                        if (upgradeId) {
+                            buyUpgrade(upgradeId);
+                        }
                     }
                 });
 
@@ -11136,7 +11385,13 @@ ${frame.bottom}
                         document.querySelector('#game-header div').appendChild(container);
                     }
 
-                    // ゲームシステムの初期化
+                    // PACTの状態を確認
+                    if (gameState.pacts?.active?.includes('1')) {
+                        hideManualRecruitButtons();
+                    }
+
+
+                    // 既存の初期化処理
                     initializeGameState();
                     initializePactSystem();
                     setupTopButtons();
@@ -11157,15 +11412,13 @@ ${frame.bottom}
                     updateDisplay();
                     updateTimeAccelerationDisplay();
 
-                    // ゲームループの開始
-                    startGameLoop();
-
                     debug("Game initialization complete");
                 } catch (error) {
                     console.error("Error during game initialization:", error);
                     handleInitializationError(error);
                 }
             }
+
             // 関連するゲーム状態の初期化関数も更新
             function initializeGameState() {
                 debug("Initializing game state");
@@ -11609,24 +11862,38 @@ ${frame.bottom}
             }
 
             function calculateFollowerProduction(adventurer) {
-                // 基本生産量
-                let production = adventurer.followerProduction;
+    // 基本生産量
+    let production = adventurer.followerProduction;
 
-                // レベルボーナス
-                production *= Math.pow(1.1, adventurer.level - 1);
+    // 基本効率を適用（1未満の値の場合は加算に変更）
+    const baseEfficiency = (gameState.followerEfficiency || 0.1);
+    production *= (baseEfficiency >= 1 ? baseEfficiency : 1 + baseEfficiency);
 
-                // 契約効果の適用
-                if (gameState.pacts?.commonMultiplier) {
-                    production *= gameState.pacts.commonMultiplier;
-                }
+    // レベルボーナスとその他のボーナスを計算
+    let totalBonus = 0;
+    
+    // レベルボーナス（10%ずつ加算）
+    totalBonus += (adventurer.level - 1) * 0.1;
 
-                // その他のボーナス（アップグレード等）の適用
-                if (gameState.followerProductionBonus) {
-                    production *= (1 + gameState.followerProductionBonus);
-                }
+    // 契約効果を加算
+    if (gameState.pacts?.commonMultiplier) {
+        // 契約乗数が1未満の場合は、ボーナスとして適切に変換
+        const pactBonus = gameState.pacts.commonMultiplier - 1;
+        totalBonus += Math.max(pactBonus, 0); // 負の値を防ぐ
+    }
 
-                return production;
-            }
+    // その他のボーナスを加算
+    if (gameState.followerProductionBonus) {
+        // 1未満の値の場合は適切にボーナスとして変換
+        const productionBonus = gameState.followerProductionBonus;
+        totalBonus += (productionBonus >= 1 ? productionBonus - 1 : productionBonus);
+    }
+
+    // 全てのボーナスを適用（ボーナスは必ず加算として扱う）
+    production *= (1 + Math.max(totalBonus, 0));
+
+    return production;
+}
 
             // リソースグラフの更新
             function updateResourceGraph() {
@@ -11760,6 +12027,19 @@ ${frame.bottom}
                 originalUpdateFollowerSection();
                 updateFollowerAppearance();
             };
+
+            // グローバル変数として初期化フラグを設定
+            let isInitialized = false;
+
+            document.addEventListener('DOMContentLoaded', function () {
+                // 重複初期化を防ぐ
+                if (isInitialized) return;
+                isInitialized = true;
+
+                // 初期化処理
+                initializeGame();
+                // その他の初期化処理...
+            });
 
         </script>
 </body>
